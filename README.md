@@ -1,4 +1,4 @@
-LIVE REQUEST
+LIVEQUEUE
 
 A real-time web application that allows patrons at live venues to submit song
 requests digitally while DJs manage and respond to those requests through a

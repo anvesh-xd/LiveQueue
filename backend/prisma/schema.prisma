@@ -1,0 +1,89 @@
+generator client {
+  provider    = "prisma-client-js"
+  engineType  = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RequestStatus {
+  pending
+  accepted
+  declined
+  played
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  requests     Request[]
+}
+
+model DJ {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  venues       VenueDJ[]
+  requests     Request[]
+}
+
+model Venue {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  djs       VenueDJ[]
+  requests  Request[]
+}
+
+model VenueDJ {
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId String
+  dj      DJ     @relation(fields: [djId], references: [id], onDelete: Cascade)
+  djId    String
+
+  @@id([venueId, djId])
+  @@index([djId])
+  @@index([venueId])
+}
+
+model Request {
+  id             String        @id @default(cuid())
+  userId         String
+  djId           String
+  venueId        String
+
+  spotifyTrackId String
+  songTitle      String
+  artistName     String
+  albumArtUrl    String?
+
+  status         RequestStatus @default(pending)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  playedAt       DateTime?
+
+  user           User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dj             DJ    @relation(fields: [djId], references: [id], onDelete: Cascade)
+  venue          Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([djId])
+  @@index([venueId])
+  @@index([status])
+  @@index([createdAt])
+}

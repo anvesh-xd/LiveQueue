@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, type SpotifyTrack } from '@/lib/api';
 
 function RequestForm() {
   const searchParams = useSearchParams();
@@ -15,25 +15,53 @@ function RequestForm() {
   const djId = searchParams.get('djId');
   const djName = searchParams.get('djName') || 'DJ';
 
-  const [songTitle, setSongTitle] = useState('');
-  const [artistName, setArtistName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SpotifyTrack[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [selectedTrack, setSelectedTrack] = useState<SpotifyTrack | null>(null);
+  const [manualTitle, setManualTitle] = useState('');
+  const [manualArtist, setManualArtist] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   if (!user) {
     return (
-      <main style={styles.main}>
-        <p>Please <Link href="/login" style={styles.link}>log in</Link> first.</p>
+      <main className="page">
+        <div className="page__content">
+          <p className="text-muted">Please <Link href="/login" className="link">log in</Link> first.</p>
+        </div>
       </main>
     );
   }
 
   if (!venueId || !djId) {
     return (
-      <main style={styles.main}>
-        <p>Missing venue or DJ. <Link href="/venues" style={styles.link}>Pick a venue</Link>.</p>
+      <main className="page">
+        <div className="page__content">
+          <p className="text-muted">Missing venue or DJ. <Link href="/venues" className="link">Pick a venue</Link>.</p>
+        </div>
       </main>
     );
+  }
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setSearchError('');
+    setSearching(true);
+    setSearchResults([]);
+    try {
+      const results = await apiFetch<SpotifyTrack[]>(`/spotify/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchResults(results);
+      if (results.length === 0) setSearchError('No tracks found. Try different words or add artist name.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Search failed';
+      setSearchError(msg.includes('Spotify') ? 'Spotify search is not set up. Use manual entry below.' : msg);
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -41,17 +69,36 @@ function RequestForm() {
     setError('');
     setLoading(true);
     try {
-      await apiFetch('/requests', {
-        method: 'POST',
-        token: token!,
-        body: JSON.stringify({
-          venueId,
-          djId,
-          spotifyTrackId: `manual-${Date.now()}`,
-          songTitle,
-          artistName,
-        }),
-      });
+      if (selectedTrack) {
+        await apiFetch('/requests', {
+          method: 'POST',
+          token: token!,
+          body: JSON.stringify({
+            venueId,
+            djId,
+            spotifyTrackId: selectedTrack.id,
+            songTitle: selectedTrack.songTitle,
+            artistName: selectedTrack.artistName,
+            albumArtUrl: selectedTrack.albumArtUrl,
+          }),
+        });
+      } else if (manualTitle.trim() && manualArtist.trim()) {
+        await apiFetch('/requests', {
+          method: 'POST',
+          token: token!,
+          body: JSON.stringify({
+            venueId,
+            djId,
+            spotifyTrackId: `manual-${Date.now()}`,
+            songTitle: manualTitle.trim(),
+            artistName: manualArtist.trim(),
+          }),
+        });
+      } else {
+        setError('Search for a song and pick one, or enter song and artist manually.');
+        setLoading(false);
+        return;
+      }
       router.push('/my-requests');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit request');
@@ -61,30 +108,74 @@ function RequestForm() {
   }
 
   return (
-    <main style={styles.main}>
-      <div style={styles.card}>
-        <Link href="/venues" style={styles.back}>← Venues</Link>
-        <h1 style={styles.title}>Request a song</h1>
-        <p style={styles.subtitle}>{venueName} · {djName}</p>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          {error && <p style={styles.error}>{error}</p>}
+    <main className="page">
+      <div className="page__content card card--glass" style={{ maxWidth: '480px', padding: 'var(--space-8)' }}>
+        <Link href="/venues" className="back-link">← Venues</Link>
+        <h1 className="title" style={{ fontSize: 'var(--text-3xl)' }}>Request a song</h1>
+        <p className="subtitle" style={{ marginBottom: 'var(--space-4)' }}>{venueName} · {djName}</p>
+
+        <form onSubmit={handleSearch} className="flex-row" style={{ marginBottom: 'var(--space-2)' }}>
+          <input
+            type="text"
+            placeholder="Search for a song or artist..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="input"
+            style={{ flex: 1, minWidth: 0 }}
+          />
+          <button type="submit" disabled={searching} className="btn btn--success btn--sm" style={{ whiteSpace: 'nowrap' }}>
+            {searching ? 'Searching...' : 'Search'}
+          </button>
+        </form>
+        {searchError && <p className="text-error" style={{ marginBottom: 'var(--space-3)' }}>{searchError}</p>}
+        {searchResults.length > 0 && (
+          <ul className="result-list">
+            {searchResults.map((t) => (
+              <li
+                key={t.id}
+                className={`result-item ${selectedTrack?.id === t.id ? 'result-item--selected' : ''}`}
+                onClick={() => setSelectedTrack(t)}
+              >
+                {t.albumArtUrl && (
+                  <img src={t.albumArtUrl} alt="" className="result-item__thumb" />
+                )}
+                <div>
+                  <strong>{t.songTitle}</strong>
+                  <span className="text-muted"> — {t.artistName}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {selectedTrack && (
+          <p className="text-muted" style={{ marginBottom: 'var(--space-3)', fontSize: 'var(--text-sm)' }}>
+            Selected: <strong>{selectedTrack.songTitle}</strong> — {selectedTrack.artistName}
+            <button type="button" onClick={() => setSelectedTrack(null)} className="btn btn--ghost btn--sm" style={{ marginLeft: 'var(--space-2)' }}>
+              Change
+            </button>
+          </p>
+        )}
+
+        <p className="text-dim" style={{ textAlign: 'center', marginBottom: 'var(--space-3)', fontSize: 'var(--text-sm)' }}>
+          — or enter manually —
+        </p>
+        <form onSubmit={handleSubmit} className="form">
+          {error && <p className="text-error">{error}</p>}
           <input
             type="text"
             placeholder="Song title"
-            value={songTitle}
-            onChange={(e) => setSongTitle(e.target.value)}
-            required
-            style={styles.input}
+            value={manualTitle}
+            onChange={(e) => setManualTitle(e.target.value)}
+            className="input"
           />
           <input
             type="text"
             placeholder="Artist name"
-            value={artistName}
-            onChange={(e) => setArtistName(e.target.value)}
-            required
-            style={styles.input}
+            value={manualArtist}
+            onChange={(e) => setManualArtist(e.target.value)}
+            className="input"
           />
-          <button type="submit" disabled={loading} style={styles.button}>
+          <button type="submit" disabled={loading} className="btn btn--primary btn--pill">
             {loading ? 'Submitting...' : 'Submit request'}
           </button>
         </form>
@@ -95,21 +186,8 @@ function RequestForm() {
 
 export default function RequestPage() {
   return (
-    <Suspense fallback={<main style={styles.main}><p>Loading...</p></main>}>
+    <Suspense fallback={<main className="page page--center"><p className="text-muted loading-pulse">Loading</p></main>}>
       <RequestForm />
     </Suspense>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  main: { minHeight: '100vh', padding: '2rem', fontFamily: 'system-ui, sans-serif' },
-  card: { maxWidth: '400px', margin: '0 auto' },
-  back: { display: 'inline-block', marginBottom: '1rem', color: '#667eea', textDecoration: 'none' },
-  title: { marginBottom: '0.25rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' },
-  subtitle: { marginBottom: '1.5rem', color: '#666', fontSize: '0.9rem' },
-  form: { display: 'flex', flexDirection: 'column', gap: '1rem' },
-  error: { margin: 0, color: '#c00', fontSize: '0.9rem' },
-  input: { padding: '0.75rem 1rem', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' },
-  button: { padding: '0.75rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer' },
-  link: { color: '#667eea', fontWeight: '600' },
-};

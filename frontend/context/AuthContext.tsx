@@ -6,6 +6,10 @@ import { apiFetch, type User } from '@/lib/api';
 
 const TOKEN_KEY = 'livequeue_token';
 const USER_KEY = 'livequeue_user';
+const DJ_TOKEN_KEY = 'livequeue_dj_token';
+const DJ_USER_KEY = 'livequeue_dj_user';
+const CLEAR_DJ_EVENT = 'livequeue:clear-dj';
+const CLEAR_PATRON_EVENT = 'livequeue:clear-patron';
 
 type AuthContextType = {
   user: User | null;
@@ -25,18 +29,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const t = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null;
-    const u = typeof window !== 'undefined' ? localStorage.getItem(USER_KEY) : null;
-    if (t && u) {
-      setToken(t);
-      try {
-        setUser(JSON.parse(u));
-      } catch {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
+    const hydrate = () => {
+      const t = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null;
+      const u = typeof window !== 'undefined' ? localStorage.getItem(USER_KEY) : null;
+      if (t && u) {
+        setToken(t);
+        try {
+          setUser(JSON.parse(u));
+        } catch {
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          setToken(null);
+          setUser(null);
+        }
+      } else {
+        setToken(null);
+        setUser(null);
       }
-    }
+    };
+    hydrate();
     setLoading(false);
+    const onClearPatron = () => {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      setToken(null);
+      setUser(null);
+    };
+    if (typeof window !== 'undefined') window.addEventListener(CLEAR_PATRON_EVENT, onClearPatron);
+    return () => {
+      if (typeof window !== 'undefined') window.removeEventListener(CLEAR_PATRON_EVENT, onClearPatron);
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -44,6 +66,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
+    localStorage.removeItem(DJ_TOKEN_KEY);
+    localStorage.removeItem(DJ_USER_KEY);
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CLEAR_DJ_EVENT));
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     setToken(data.token);
@@ -56,6 +81,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       method: 'POST',
       body: JSON.stringify({ email, password, name }),
     });
+    localStorage.removeItem(DJ_TOKEN_KEY);
+    localStorage.removeItem(DJ_USER_KEY);
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CLEAR_DJ_EVENT));
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     setToken(data.token);

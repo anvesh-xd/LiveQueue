@@ -8,52 +8,66 @@ export default function Home() {
 
   if (loading) {
     return (
-      <main style={styles.main}>
-        <p style={styles.loading}>Loading...</p>
+      <main className="page page--center">
+        <p className="text-muted loading-pulse">Loading</p>
       </main>
     );
   }
 
   return (
-    <main style={styles.main}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>LiveQueue</h1>
-        <p style={styles.subtitle}>Real-time song requests for live events</p>
-        {user ? (
-          <>
-            <p style={styles.welcome}>Hi, {user.name}!</p>
-            <div style={styles.links}>
-              <Link href="/venues" style={styles.link}>Browse venues</Link>
-              <Link href="/my-requests" style={styles.link}>My requests</Link>
-            </div>
-            <button type="button" onClick={logout} style={styles.logout}>Log out</button>
-          </>
-        ) : (
-          <>
-            <div style={styles.links}>
-              <Link href="/login" style={styles.link}>Log in</Link>
-              <Link href="/register" style={styles.link}>Sign up</Link>
-            </div>
-            <p style={styles.djLink}>
-              <Link href="/dj/login" style={styles.linkSmall}>DJ dashboard login</Link>
-            </p>
-          </>
-        )}
-      </div>
+    <main className="hero">
+      {user ? (
+        <>
+          <span className="hero__badge">Welcome back</span>
+          <h1 className="hero__title">
+            Hi, <span>{user.name}</span>
+          </h1>
+          <p className="hero__tagline" style={{ marginBottom: 'var(--space-8)' }}>
+            Choose where you want to request songs or check your request status.
+          </p>
+          <div className="action-cards">
+            <Link href="/venues" className="action-card">
+              <div className="action-card__icon" aria-hidden>📍</div>
+              <div className="action-card__title">Browse venues</div>
+              <div className="action-card__desc">Find a venue and DJ, then submit your song request.</div>
+            </Link>
+            <Link href="/my-requests" className="action-card">
+              <div className="action-card__icon" aria-hidden>🎵</div>
+              <div className="action-card__title">My requests</div>
+              <div className="action-card__desc">See all your requests and their status in real time.</div>
+            </Link>
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            className="btn btn--ghost btn--sm"
+            style={{ marginTop: 'var(--space-10)' }}
+          >
+            Log out
+          </button>
+        </>
+      ) : (
+        <>
+          <span className="hero__badge">Real-time song requests</span>
+          <h1 className="hero__title">
+            Live<span>Queue</span>
+          </h1>
+          <p className="hero__tagline">
+            Request songs at live events. DJs see your requests instantly and you get status updates in real time.
+          </p>
+          <div className="hero__actions">
+            <Link href="/register" className="btn btn--primary btn--pill">
+              Get started
+            </Link>
+            <Link href="/login" className="btn btn--outline btn--pill">
+              Log in
+            </Link>
+          </div>
+          <p className="hero__foot">
+            <Link href="/dj/login" className="link--muted">DJ? Sign in to your dashboard</Link>
+          </p>
+        </>
+      )}
     </main>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  main: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: 'system-ui, sans-serif' },
-  loading: { color: '#666' },
-  card: { textAlign: 'center', maxWidth: '480px' },
-  title: { fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' },
-  subtitle: { color: '#666', marginBottom: '2rem' },
-  welcome: { marginBottom: '1.5rem', fontSize: '1.1rem' },
-  links: { display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' },
-  link: { padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' },
-  linkSmall: { color: '#764ba2', textDecoration: 'none', fontSize: '0.9rem' },
-  djLink: { marginTop: '1rem', color: '#666' },
-  logout: { marginTop: '1.5rem', padding: '0.5rem 1rem', background: 'transparent', color: '#666', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' },
-};

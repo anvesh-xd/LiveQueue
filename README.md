@@ -9,7 +9,7 @@ This project explores real-time systems, multi-user workflows, API integrations,
 **Patron experience**
 - Sign up and log in
 - Select a venue
-- Request songs (song title + artist; Spotify search planned)
+- Request songs via Spotify search or manual entry
 - View live request status: Pending → Accepted / Declined → Played
 
 **DJ dashboard**
@@ -39,6 +39,7 @@ This project was built as a personal engineering project to practice real-time a
 | Backend  | Node.js, Express, TypeScript |
 | Database | PostgreSQL, Prisma ORM |
 | Real-time | Socket.io |
+| Song search | [Spotify Web API](https://developer.spotify.com/documentation/web-api) (optional) |
 
 ## Architecture
 
@@ -130,6 +131,10 @@ Coming soon.
 
 - [Product Requirements Document](./PRD.md) — PRD and feature list
 - [Build steps](./BUILD_STEPS.md) — Step-by-step build plan
+
+## Third-party services
+
+Song search uses the **Spotify Web API**. Use of the API is subject to [Spotify’s Developer Terms of Service](https://developer.spotify.com/terms). This project is not affiliated with, endorsed by, or sponsored by Spotify. Personal/portfolio use only; not for commercial use.
 
 ## License
 

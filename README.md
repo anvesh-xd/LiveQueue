@@ -1,149 +1,136 @@
 # LiveQueue
 
-Real-time web application for live events where patrons submit song requests digitally and DJs manage those requests from a live dashboard.
+A real-time web application that allows patrons at live venues to submit song requests digitally while DJs manage and respond to those requests through a live dashboard.
 
-## 🎯 Overview
+This project explores real-time systems, multi-user workflows, API integrations, and full-stack application architecture.
 
-LiveQueue enables seamless communication between event patrons and DJs. Patrons can browse venues, search for songs via Spotify, and submit requests. DJs receive these requests in real-time and can accept, decline, or mark them as played.
+## Features
 
-## 🏗️ Architecture
+**Patron experience**
+- Sign up and log in
+- Select a venue
+- Request songs (song title + artist; Spotify search planned)
+- View live request status: Pending → Accepted / Declined → Played
 
-This is a monorepo containing:
+**DJ dashboard**
+- Secure login
+- Real-time incoming request feed
+- Accept or decline requests
+- View and manage the request queue
+- Mark songs as played
 
-- **Backend** (`/backend`) - Express + TypeScript API server
-- **Frontend** (`/frontend`) - Next.js + TypeScript web application
-
-## 🛠️ Tech Stack
-
-### Backend
-- Node.js + Express
-- TypeScript
+**System**
+- Real-time updates using Socket.io (WebSockets)
+- Role-based authentication (Patron / DJ)
 - PostgreSQL + Prisma
-- Socket.io (real-time)
+- Monorepo: Next.js frontend, Express backend
 
-### Frontend
-- Next.js 14
-- TypeScript
-- React 18
-- Socket.io Client
+## Motivation
 
-## 📦 Setup
+At live venues, DJs are often interrupted by patrons requesting songs verbally, which disrupts performance flow and creates uncertainty for patrons. LiveQueue digitizes this interaction while preserving DJ control and improving transparency for users.
+
+This project was built as a personal engineering project to practice real-time application design, API integrations, system architecture, and full-stack development.
+
+## Tech stack
+
+| Layer     | Tech |
+|----------|------|
+| Frontend | Next.js 14, React 18, TypeScript |
+| Backend  | Node.js, Express, TypeScript |
+| Database | PostgreSQL, Prisma ORM |
+| Real-time | Socket.io |
+
+## Architecture
+
+Monorepo layout:
+
+- **Backend** (`/backend`) — Express API, auth, venues, requests CRUD, Socket.io
+- **Frontend** (`/frontend`) — Next.js app, patron flows, DJ dashboard
+
+```
+Patron Web App  ── REST API ──►  Backend (Express)  ──►  PostgreSQL
+                                       │
+                     Socket.io (request:new, request:updated)
+                                       │
+                                 DJ Dashboard
+```
+
+## Installation (local development)
 
 ### Prerequisites
-- Node.js >= 18.0.0
-- npm >= 9.0.0
-- PostgreSQL database
 
-### Installation
+- Node.js >= 18
+- PostgreSQL
+- npm >= 9
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd LiveQueue
-```
+### Setup
 
-2. Install all dependencies:
-```bash
-npm install
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/anvesh-xd/LiveQueue.git
+   cd LiveQueue
+   ```
 
-3. Set up environment variables:
+2. **Install dependencies**
+   ```bash
+   npm install
+   cd backend && npm install && cd ..
+   cd frontend && npm install && cd ..
+   ```
 
-**Backend** (`backend/.env`):
-```env
-PORT=3001
-DATABASE_URL="postgresql://user:password@localhost:5432/livequeue"
-```
+3. **Environment variables**
 
-**Frontend** (`frontend/.env.local`):
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-```
+   **Backend** — copy `backend/.env.example` to `backend/.env`:
+   ```env
+   PORT=3001
+   JWT_SECRET=your-secret-key
+   DATABASE_URL="postgresql://user:password@localhost:5432/livequeue?schema=public"
+   ```
 
-4. Set up the database:
-```bash
-cd backend
-npx prisma migrate dev
-```
+   **Frontend** — copy `frontend/.env.example` to `frontend/.env.local` (optional):
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:3001
+   ```
 
-## 🚀 Development
+4. **Database**
+   ```bash
+   cd backend
+   npx prisma generate
+   npx prisma migrate dev
+   npm run prisma:seed
+   ```
 
-### Run both frontend and backend:
-```bash
-npm run dev
-```
+5. **Run the app**
+   ```bash
+   # From repo root — both backend and frontend
+   npm run dev
+   ```
+   - Backend: http://localhost:3001  
+   - Frontend: http://localhost:3000  
 
-### Run individually:
-```bash
-# Backend only
-npm run dev:backend
+   Or run separately: `npm run dev:backend` and `npm run dev:frontend`.
 
-# Frontend only
-npm run dev:frontend
-```
+### Scripts
 
-- Backend: http://localhost:3001
-- Frontend: http://localhost:3000
+| Command | Description |
+|--------|-------------|
+| `npm run dev` | Start backend + frontend |
+| `npm run dev:backend` | Backend only |
+| `npm run dev:frontend` | Frontend only |
+| `npm run build` | Build both for production |
 
-## 📝 Available Scripts
+Backend: `prisma:migrate`, `prisma:studio`, `prisma:seed`.  
+See `backend/README.md` and `frontend/README.md` for more.
 
-### Root Level
-- `npm run dev` - Start both frontend and backend in development mode
-- `npm run dev:backend` - Start backend only
-- `npm run dev:frontend` - Start frontend only
-- `npm run build` - Build both projects for production
-- `npm run build:backend` - Build backend only
-- `npm run build:frontend` - Build frontend only
+## Live demo
 
-### Backend (`/backend`)
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build TypeScript to JavaScript
-- `npm start` - Start production server
-- `npm run type-check` - Type check without building
+Coming soon.
 
-### Frontend (`/frontend`)
-- `npm run dev` - Start Next.js development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run type-check` - Type check without building
+## Documentation
 
-## 📁 Project Structure
+- [Product Requirements Document](./PRD.md) — PRD and feature list
+- [Build steps](./BUILD_STEPS.md) — Step-by-step build plan
 
-```
-LiveQueue/
-├── backend/
-│   ├── src/
-│   │   └── index.ts
-│   ├── prisma/
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── README.md
-├── frontend/
-│   ├── app/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   └── globals.css
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── README.md
-├── package.json
-├── PRD.md
-└── README.md
-```
+## License
 
-## 🧪 Testing
-
-Testing setup will be added in future iterations.
-
-## 📄 Documentation
-
-- [Product Requirements Document](./PRD.md) - Complete PRD with features and specifications
-
-## 🤝 Contributing
-
-This is a personal engineering project. Contributions and suggestions are welcome!
-
-## 📝 License
-
-ISC
+MIT

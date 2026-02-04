@@ -1,20 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useDjAuth } from '@/context/DjAuthContext';
 
 export function Header() {
-  const pathname = usePathname();
   const { user, loading: patronLoading, logout } = useAuth();
   const { djUser, loading: djLoading, djLogout } = useDjAuth();
   const [scrolled, setScrolled] = useState(false);
 
   const loading = patronLoading || djLoading;
-  const isLanding = pathname === '/' && !user && !djUser;
-  const isDark = isLanding;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,14 +23,8 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const headerClass = [
-    'header',
-    scrolled ? 'header--scrolled' : '',
-    isDark ? 'header--dark' : '',
-  ].filter(Boolean).join(' ');
-
   return (
-    <header className={headerClass}>
+    <header className={`header ${scrolled ? 'header--scrolled' : ''}`}>
       <div className="header__inner">
         <Link href="/" className="header__brand">
           LiveQueue

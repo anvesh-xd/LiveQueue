@@ -21,56 +21,74 @@ export default function VenuesPage() {
 
   if (authLoading) {
     return (
-      <main className="page">
-        <p className="text-muted loading-pulse">Loading</p>
+      <main className="browse-page">
+        <div className="browse-page__inner">
+          <p className="text-muted loading-pulse">Loading</p>
+        </div>
       </main>
     );
   }
+
   if (!user) {
     return (
-      <main className="page">
-        <div className="page__content">
-          <p className="text-muted">Please <Link href="/login" className="link">log in</Link> to view venues.</p>
+      <main className="browse-page">
+        <div className="browse-page__inner">
+          <div className="empty-state">
+            <div className="empty-state__icon">🔒</div>
+            <h2 className="empty-state__title">Sign in required</h2>
+            <p className="empty-state__desc">
+              Please <Link href="/login" className="link">log in</Link> to browse venues.
+            </p>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="page">
-      <div className="page__content" style={{ maxWidth: '900px' }}>
-        <h1 className="title" style={{ fontSize: 'var(--text-3xl)' }}>Venues</h1>
-        <p className="subtitle">Pick a venue and DJ to request a song</p>
-        {error && <p className="text-error" style={{ marginBottom: 'var(--space-4)' }}>{error}</p>}
+    <main className="browse-page">
+      <div className="browse-page__inner">
+        <header className="browse-page__header">
+          <h1 className="browse-page__title">Venues</h1>
+          <p className="browse-page__subtitle">Pick a venue to request a song</p>
+        </header>
+
+        {error && <p className="auth-page__error" style={{ marginBottom: 'var(--space-6)' }}>{error}</p>}
+
         {loading ? (
-          <p className="text-muted loading-pulse">Loading venues</p>
+          <p className="text-muted loading-pulse">Loading venues...</p>
         ) : venues.length === 0 ? (
-          <p className="text-muted">No venues yet.</p>
+          <div className="empty-state">
+            <div className="empty-state__icon">📍</div>
+            <h2 className="empty-state__title">No venues yet</h2>
+            <p className="empty-state__desc">Check back later for available venues.</p>
+          </div>
         ) : (
-          <div className="card-grid">
+          <div className="venue-grid">
             {venues.map((venue) => (
-              <div key={venue.id} className="listing-card">
-                <div className="listing-card__visual" aria-hidden>📍</div>
-                <div className="listing-card__body">
-                  <div className="listing-card__title">{venue.name}</div>
-                  <div className="listing-card__meta">
-                    {venue.address || 'No address'}
-                    {venue.djs.length > 0 && ` · ${venue.djs.length} DJ${venue.djs.length > 1 ? 's' : ''}`}
-                  </div>
+              <div key={venue.id} className="venue-card">
+                <div className="venue-card__header">
+                  <h2 className="venue-card__name">{venue.name}</h2>
+                  <p className="venue-card__address">{venue.address || 'No address listed'}</p>
+                </div>
+                <div className="venue-card__body">
                   {venue.djs.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                    <div className="venue-card__dj-list">
                       {venue.djs.map((dj) => (
                         <Link
                           key={dj.id}
                           href={`/request?venueId=${encodeURIComponent(venue.id)}&venueName=${encodeURIComponent(venue.name)}&djId=${encodeURIComponent(dj.id)}&djName=${encodeURIComponent(dj.name)}`}
-                          className="listing-card__action"
+                          className="venue-card__dj-btn"
                         >
-                          Request a song · {dj.name}
+                          <span>Request · {dj.name}</span>
+                          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <path d="M6 4l4 4-4 4" />
+                          </svg>
                         </Link>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-dim" style={{ fontSize: 'var(--text-sm)' }}>No DJ assigned</span>
+                    <p className="venue-card__empty">No DJs available</p>
                   )}
                 </div>
               </div>

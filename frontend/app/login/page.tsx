@@ -25,41 +25,43 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="page page--center">
-      <div className="card card--narrow card--center">
-        <h1 className="title" style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-1)' }}>
-          Welcome back
-        </h1>
-        <p className="subtitle">Sign in to your patron account</p>
-        <form onSubmit={handleSubmit} className="form">
-          {error && <p className="text-error">{error}</p>}
+    <main className="auth-page">
+      <div className="auth-page__content">
+        <div className="auth-page__header">
+          <h1 className="auth-page__title">Welcome back</h1>
+          <p className="auth-page__subtitle">Sign in to continue</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="auth-page__form">
+          {error && <p className="auth-page__error">{error}</p>}
+          
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="input"
+            className="auth-page__input"
+            autoComplete="email"
           />
+          
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="input"
+            className="auth-page__input"
+            autoComplete="current-password"
           />
-          <button 
-            type="submit" 
-            disabled={loading} 
-            className="btn btn--primary"
-            style={{ marginTop: 'var(--space-2)', width: '100%' }}
-          >
+          
+          <button type="submit" disabled={loading} className="auth-page__submit">
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-        <p className="text-muted" style={{ marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
-          No account? <Link href="/register" className="link">Create one</Link>
+
+        <p className="auth-page__footer">
+          No account? <Link href="/register">Create one</Link>
         </p>
       </div>
     </main>

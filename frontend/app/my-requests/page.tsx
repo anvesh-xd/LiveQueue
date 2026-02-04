@@ -46,43 +46,65 @@ export default function MyRequestsPage() {
 
   if (authLoading) {
     return (
-      <main className="page">
-        <p className="text-muted loading-pulse">Loading</p>
+      <main className="requests-page">
+        <div className="requests-page__inner">
+          <p className="text-muted loading-pulse">Loading</p>
+        </div>
       </main>
     );
   }
+
   if (!user) {
     return (
-      <main className="page">
-        <div className="page__content">
-          <p className="text-muted">Please <Link href="/login" className="link">log in</Link> to see your requests.</p>
+      <main className="requests-page">
+        <div className="requests-page__inner">
+          <div className="empty-state">
+            <div className="empty-state__icon">🔒</div>
+            <h2 className="empty-state__title">Sign in required</h2>
+            <p className="empty-state__desc">
+              Please <Link href="/login" className="link">log in</Link> to see your requests.
+            </p>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="page">
-      <div className="page__content" style={{ maxWidth: '900px' }}>
-        <h1 className="title" style={{ fontSize: 'var(--text-3xl)' }}>My requests</h1>
-        <p className="subtitle">Status updates appear in real time</p>
-        <Link href="/venues" className="back-link">Venues</Link>
-        {error && <p className="text-error" style={{ marginBottom: 'var(--space-4)' }}>{error}</p>}
+    <main className="requests-page">
+      <div className="requests-page__inner">
+        <header className="requests-page__header">
+          <h1 className="requests-page__title">My requests</h1>
+          <p className="requests-page__subtitle">Live status updates</p>
+        </header>
+
+        {error && <p className="auth-page__error" style={{ marginBottom: 'var(--space-6)' }}>{error}</p>}
+
         {loading ? (
-          <p className="text-muted loading-pulse">Loading</p>
+          <p className="text-muted loading-pulse">Loading...</p>
         ) : requests.length === 0 ? (
-          <p className="text-muted">No requests yet. <Link href="/venues" className="link">Request a song</Link>.</p>
+          <div className="empty-state">
+            <div className="empty-state__icon">🎵</div>
+            <h2 className="empty-state__title">No requests yet</h2>
+            <p className="empty-state__desc">
+              <Link href="/venues" className="link">Browse venues</Link> to request your first song.
+            </p>
+          </div>
         ) : (
-          <div className="card-grid">
+          <div className="requests-page__list">
             {requests.map((req) => (
-              <div key={req.id} className="listing-card">
-                <div className="listing-card__visual" aria-hidden>🎵</div>
-                <div className="listing-card__body">
-                  <div className="listing-card__title">{req.songTitle}</div>
-                  <div className="listing-card__meta">
-                    {req.artistName} · {req.venue.name}
-                  </div>
-                  <span className={`badge badge--${req.status}`}>{req.status}</span>
+              <div key={req.id} className="request-item">
+                <div className="request-item__art">🎵</div>
+                <div className="request-item__content">
+                  <h3 className="request-item__title">{req.songTitle}</h3>
+                  <p className="request-item__meta">{req.artistName} · {req.venue.name}</p>
+                  <span className={`request-item__status request-item__status--${req.status}`}>
+                    {req.status === 'pending' && '⏳ '}
+                    {req.status === 'accepted' && '✓ '}
+                    {req.status === 'played' && '🎵 '}
+                    {req.status === 'declined' && '✕ '}
+                    {req.status}
+                  </span>
                 </div>
               </div>
             ))}

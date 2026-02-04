@@ -26,49 +26,53 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="page page--center">
-      <div className="card card--narrow card--center">
-        <h1 className="title" style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-1)' }}>
-          Create an account
-        </h1>
-        <p className="subtitle">Start requesting songs at live events</p>
-        <form onSubmit={handleSubmit} className="form">
-          {error && <p className="text-error">{error}</p>}
+    <main className="auth-page">
+      <div className="auth-page__content">
+        <div className="auth-page__header">
+          <h1 className="auth-page__title">Get started</h1>
+          <p className="auth-page__subtitle">Create your account</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="auth-page__form">
+          {error && <p className="auth-page__error">{error}</p>}
+          
           <input
             type="text"
             placeholder="Your name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="input"
+            className="auth-page__input"
+            autoComplete="name"
           />
+          
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="input"
+            className="auth-page__input"
+            autoComplete="email"
           />
+          
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="input"
+            className="auth-page__input"
+            autoComplete="new-password"
           />
-          <button 
-            type="submit" 
-            disabled={loading} 
-            className="btn btn--primary"
-            style={{ marginTop: 'var(--space-2)', width: '100%' }}
-          >
+          
+          <button type="submit" disabled={loading} className="auth-page__submit">
             {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
-        <p className="text-muted" style={{ marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
-          Already have an account? <Link href="/login" className="link">Sign in</Link>
+
+        <p className="auth-page__footer">
+          Already have an account? <Link href="/login">Sign in</Link>
         </p>
       </div>
     </main>

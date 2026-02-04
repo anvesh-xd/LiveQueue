@@ -27,9 +27,15 @@ function RequestForm() {
 
   if (!user) {
     return (
-      <main className="page">
-        <div className="page__content">
-          <p className="text-muted">Please <Link href="/login" className="link">log in</Link> first.</p>
+      <main className="request-page">
+        <div className="request-page__content">
+          <div className="empty-state">
+            <div className="empty-state__icon">🔒</div>
+            <h2 className="empty-state__title">Sign in required</h2>
+            <p className="empty-state__desc">
+              Please <Link href="/login" className="link">log in</Link> to request songs.
+            </p>
+          </div>
         </div>
       </main>
     );
@@ -37,9 +43,15 @@ function RequestForm() {
 
   if (!venueId || !djId) {
     return (
-      <main className="page">
-        <div className="page__content">
-          <p className="text-muted">Missing venue or DJ. <Link href="/venues" className="link">Pick a venue</Link>.</p>
+      <main className="request-page">
+        <div className="request-page__content">
+          <div className="empty-state">
+            <div className="empty-state__icon">📍</div>
+            <h2 className="empty-state__title">No venue selected</h2>
+            <p className="empty-state__desc">
+              <Link href="/venues" className="link">Pick a venue</Link> to get started.
+            </p>
+          </div>
         </div>
       </main>
     );
@@ -54,10 +66,10 @@ function RequestForm() {
     try {
       const results = await apiFetch<SpotifyTrack[]>(`/spotify/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchResults(results);
-      if (results.length === 0) setSearchError('No tracks found. Try different words or add artist name.');
+      if (results.length === 0) setSearchError('No tracks found. Try different keywords.');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Search failed';
-      setSearchError(msg.includes('Spotify') ? 'Spotify search is not set up. Use manual entry below.' : msg);
+      setSearchError(msg.includes('Spotify') ? 'Search unavailable. Enter manually below.' : msg);
       setSearchResults([]);
     } finally {
       setSearching(false);
@@ -95,7 +107,7 @@ function RequestForm() {
           }),
         });
       } else {
-        setError('Search for a song and pick one, or enter song and artist manually.');
+        setError('Select a song from search or enter details manually.');
         setLoading(false);
         return;
       }
@@ -108,74 +120,87 @@ function RequestForm() {
   }
 
   return (
-    <main className="page">
-      <div className="page__content card card--glass" style={{ maxWidth: '480px', padding: 'var(--space-8)' }}>
-        <Link href="/venues" className="back-link">← Venues</Link>
-        <h1 className="title" style={{ fontSize: 'var(--text-3xl)' }}>Request a song</h1>
-        <p className="subtitle" style={{ marginBottom: 'var(--space-4)' }}>{venueName} · {djName}</p>
+    <main className="request-page">
+      <div className="request-page__content">
+        <Link href="/venues" className="request-page__back">
+          ← Back to venues
+        </Link>
 
-        <form onSubmit={handleSearch} className="flex-row" style={{ marginBottom: 'var(--space-2)' }}>
+        <header className="request-page__header">
+          <h1 className="request-page__title">Request a song</h1>
+          <p className="request-page__venue">{venueName} · {djName}</p>
+        </header>
+
+        {error && <p className="auth-page__error" style={{ marginBottom: 'var(--space-4)' }}>{error}</p>}
+
+        <form onSubmit={handleSearch} className="request-page__search">
           <input
             type="text"
-            placeholder="Search for a song or artist..."
+            placeholder="Search for a song..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="input"
-            style={{ flex: 1, minWidth: 0 }}
+            className="request-page__search-input"
           />
-          <button type="submit" disabled={searching} className="btn btn--success btn--sm" style={{ whiteSpace: 'nowrap' }}>
-            {searching ? 'Searching...' : 'Search'}
+          <button type="submit" disabled={searching} className="request-page__search-btn">
+            {searching ? '...' : 'Search'}
           </button>
         </form>
-        {searchError && <p className="text-error" style={{ marginBottom: 'var(--space-3)' }}>{searchError}</p>}
+
+        {searchError && <p className="text-error" style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>{searchError}</p>}
+
         {searchResults.length > 0 && (
-          <ul className="result-list">
+          <div className="request-page__results">
             {searchResults.map((t) => (
-              <li
+              <div
                 key={t.id}
-                className={`result-item ${selectedTrack?.id === t.id ? 'result-item--selected' : ''}`}
+                className={`request-page__result ${selectedTrack?.id === t.id ? 'request-page__result--selected' : ''}`}
                 onClick={() => setSelectedTrack(t)}
               >
-                {t.albumArtUrl && (
-                  <img src={t.albumArtUrl} alt="" className="result-item__thumb" />
+                {t.albumArtUrl ? (
+                  <img src={t.albumArtUrl} alt="" className="request-page__result-art" />
+                ) : (
+                  <div className="request-page__result-art" />
                 )}
-                <div>
-                  <strong>{t.songTitle}</strong>
-                  <span className="text-muted"> — {t.artistName}</span>
+                <div className="request-page__result-info">
+                  <p className="request-page__result-title">{t.songTitle}</p>
+                  <p className="request-page__result-artist">{t.artistName}</p>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
+
         {selectedTrack && (
-          <p className="text-muted" style={{ marginBottom: 'var(--space-3)', fontSize: 'var(--text-sm)' }}>
-            Selected: <strong>{selectedTrack.songTitle}</strong> — {selectedTrack.artistName}
-            <button type="button" onClick={() => setSelectedTrack(null)} className="btn btn--ghost btn--sm" style={{ marginLeft: 'var(--space-2)' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
+            Selected: <strong>{selectedTrack.songTitle}</strong> by {selectedTrack.artistName}
+            <button
+              type="button"
+              onClick={() => setSelectedTrack(null)}
+              style={{ marginLeft: 'var(--space-2)', color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)' }}
+            >
               Change
             </button>
           </p>
         )}
 
-        <p className="text-dim" style={{ textAlign: 'center', marginBottom: 'var(--space-3)', fontSize: 'var(--text-sm)' }}>
-          — or enter manually —
-        </p>
-        <form onSubmit={handleSubmit} className="form">
-          {error && <p className="text-error">{error}</p>}
+        <div className="request-page__divider">or enter manually</div>
+
+        <form onSubmit={handleSubmit} className="request-page__manual">
           <input
             type="text"
             placeholder="Song title"
             value={manualTitle}
             onChange={(e) => setManualTitle(e.target.value)}
-            className="input"
+            className="request-page__manual-input"
           />
           <input
             type="text"
             placeholder="Artist name"
             value={manualArtist}
             onChange={(e) => setManualArtist(e.target.value)}
-            className="input"
+            className="request-page__manual-input"
           />
-          <button type="submit" disabled={loading} className="btn btn--primary btn--pill">
+          <button type="submit" disabled={loading} className="request-page__submit">
             {loading ? 'Submitting...' : 'Submit request'}
           </button>
         </form>
@@ -186,7 +211,7 @@ function RequestForm() {
 
 export default function RequestPage() {
   return (
-    <Suspense fallback={<main className="page page--center"><p className="text-muted loading-pulse">Loading</p></main>}>
+    <Suspense fallback={<main className="request-page"><div className="request-page__content"><p className="text-muted loading-pulse">Loading</p></div></main>}>
       <RequestForm />
     </Suspense>
   );

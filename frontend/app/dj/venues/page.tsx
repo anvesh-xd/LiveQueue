@@ -25,19 +25,6 @@ export default function DjVenuesPage() {
     }
   }, [authLoading, djUser, router]);
 
-  function fetchMyVenues() {
-    if (!djToken) return;
-    apiFetch<Venue[]>('/venues/dj', { token: djToken })
-      .then(setMyVenues)
-      .catch(() => setMyVenues([]));
-  }
-
-  function fetchAllVenues() {
-    apiFetch<Venue[]>('/venues')
-      .then(setAllVenues)
-      .catch(() => setAllVenues([]));
-  }
-
   useEffect(() => {
     if (!djUser) return;
     setLoading(true);
@@ -95,8 +82,10 @@ export default function DjVenuesPage() {
 
   if (authLoading || !djUser) {
     return (
-      <main className="page">
-        <p className="text-muted loading-pulse">Loading</p>
+      <main className="manage-page">
+        <div className="manage-page__inner">
+          <p className="text-muted loading-pulse">Loading</p>
+        </div>
       </main>
     );
   }
@@ -105,30 +94,29 @@ export default function DjVenuesPage() {
   const linkableVenues = allVenues.filter((v) => !myVenueIds.has(v.id));
 
   return (
-    <main className="page">
-      <div className="page__content">
-        <h1 className="title">My venues</h1>
-        <p className="subtitle">Create a venue or link yourself to an existing one. Patrons will see these when requesting songs.</p>
-        <div className="flex-row" style={{ marginBottom: 'var(--space-6)' }}>
-          <Link href="/dj" className="back-link">← Dashboard</Link>
-        </div>
-        {error && <p className="text-error" style={{ marginBottom: 'var(--space-4)' }}>{error}</p>}
+    <main className="manage-page">
+      <div className="manage-page__inner">
+        <header className="manage-page__header">
+          <Link href="/dj" className="manage-page__back">← Dashboard</Link>
+          <h1 className="manage-page__title">My venues</h1>
+          <p className="manage-page__subtitle">Manage where patrons can find you</p>
+        </header>
+
+        {error && <p className="auth-page__error" style={{ marginBottom: 'var(--space-6)' }}>{error}</p>}
 
         {loading ? (
-          <p className="text-muted">Loading venues...</p>
+          <p className="text-muted loading-pulse">Loading...</p>
         ) : (
           <>
-            <section style={{ marginBottom: 'var(--space-8)' }}>
-              <h2 className="text-muted" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-                Create a new venue
-              </h2>
-              <form onSubmit={handleCreate} className="form" style={{ maxWidth: '400px' }}>
+            <section className="manage-page__section">
+              <h2 className="manage-page__section-title">Create new venue</h2>
+              <form onSubmit={handleCreate} className="manage-page__form">
                 <input
                   type="text"
                   placeholder="Venue name"
                   value={createName}
                   onChange={(e) => setCreateName(e.target.value)}
-                  className="input"
+                  className="manage-page__input"
                   required
                 />
                 <input
@@ -136,62 +124,51 @@ export default function DjVenuesPage() {
                   placeholder="Address (optional)"
                   value={createAddress}
                   onChange={(e) => setCreateAddress(e.target.value)}
-                  className="input"
+                  className="manage-page__input"
                 />
-                <button type="submit" disabled={creating} className="btn btn--primary">
+                <button type="submit" disabled={creating} className="manage-page__btn">
                   {creating ? 'Creating...' : 'Create venue'}
                 </button>
               </form>
             </section>
 
-            <section style={{ marginBottom: 'var(--space-8)' }}>
-              <h2 className="text-muted" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-                Your venues
-              </h2>
+            <section className="manage-page__section">
+              <h2 className="manage-page__section-title">Your venues</h2>
               {myVenues.length === 0 ? (
-                <p className="text-muted">You haven’t created or linked to any venues yet.</p>
+                <p className="text-muted">No venues yet. Create one above.</p>
               ) : (
-                <ul className="list">
-                  {myVenues.map((v) => (
-                    <li key={v.id} className="list-item">
-                      <strong>{v.name}</strong>
-                      {v.address && <span className="text-muted"> — {v.address}</span>}
-                      <div className="text-dim" style={{ fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>
-                        {v.djs.length > 0 ? `DJs: ${v.djs.map((d) => d.name).join(', ')}` : 'No other DJs linked'}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                myVenues.map((v) => (
+                  <div key={v.id} className="venue-item">
+                    <div className="venue-item__info">
+                      <p className="venue-item__name">{v.name}</p>
+                      <p className="venue-item__meta">{v.address || 'No address'}</p>
+                    </div>
+                  </div>
+                ))
               )}
             </section>
 
-            <section>
-              <h2 className="text-muted" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-                Link to an existing venue
-              </h2>
-              {linkableVenues.length === 0 ? (
-                <p className="text-muted">All venues are already linked to you, or there are no other venues yet.</p>
-              ) : (
-                <ul className="list">
-                  {linkableVenues.map((v) => (
-                    <li key={v.id} className="list-item flex-row" style={{ justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-                      <div>
-                        <strong>{v.name}</strong>
-                        {v.address && <span className="text-muted"> — {v.address}</span>}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleLink(v.id)}
-                        disabled={linkingId === v.id}
-                        className="btn btn--ghost btn--sm"
-                      >
-                        {linkingId === v.id ? 'Linking...' : 'Link me'}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
+            {linkableVenues.length > 0 && (
+              <section className="manage-page__section">
+                <h2 className="manage-page__section-title">Link to existing venue</h2>
+                {linkableVenues.map((v) => (
+                  <div key={v.id} className="venue-item">
+                    <div className="venue-item__info">
+                      <p className="venue-item__name">{v.name}</p>
+                      <p className="venue-item__meta">{v.address || 'No address'}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleLink(v.id)}
+                      disabled={linkingId === v.id}
+                      className="venue-item__action"
+                    >
+                      {linkingId === v.id ? 'Linking...' : 'Link'}
+                    </button>
+                  </div>
+                ))}
+              </section>
+            )}
           </>
         )}
       </div>

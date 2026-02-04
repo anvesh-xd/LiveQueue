@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { io, Socket } from 'socket.io-client';
 import { useDjAuth } from '@/context/DjAuthContext';
 import { apiFetch, type SongRequest } from '@/lib/api';
@@ -11,14 +10,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default function DjDashboardPage() {
   const router = useRouter();
-  const { djUser, djToken, loading: authLoading, djLogout } = useDjAuth();
+  const { djUser, djToken, loading: authLoading } = useDjAuth();
   const [requests, setRequests] = useState<SongRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
-  // Redirect non-DJ users (e.g. patrons who typed /dj) to DJ login — only DJs may access this page
   useEffect(() => {
     if (authLoading) return;
     if (!djUser) {
@@ -73,8 +71,10 @@ export default function DjDashboardPage() {
 
   if (authLoading || !djUser) {
     return (
-      <main className="page">
-        <p className="text-muted loading-pulse">Loading</p>
+      <main className="dashboard">
+        <div className="dashboard__inner">
+          <p className="text-muted loading-pulse">Loading</p>
+        </div>
       </main>
     );
   }
@@ -84,73 +84,113 @@ export default function DjDashboardPage() {
   const others = requests.filter((r) => r.status !== 'pending' && r.status !== 'accepted');
 
   return (
-    <main className="page">
-      <div className="page__content">
-        <div className="flex-row" style={{ marginBottom: 'var(--space-6)', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-          <div>
-            <h1 className="title">DJ dashboard</h1>
-            <p className="text-muted" style={{ marginBottom: 0 }}>Hi, {djUser.name}. Requests update in real time.</p>
-          </div>
-          <button type="button" onClick={djLogout} className="btn btn--ghost btn--sm">
-            Log out
-          </button>
-        </div>
-        {error && <p className="text-error" style={{ marginBottom: 'var(--space-4)' }}>{error}</p>}
+    <main className="dashboard">
+      <div className="dashboard__inner">
+        <header className="dashboard__header">
+          <p className="dashboard__greeting">Welcome back</p>
+          <h1 className="dashboard__title">{djUser.name}</h1>
+        </header>
+
+        {error && <p className="auth-page__error" style={{ marginBottom: 'var(--space-6)' }}>{error}</p>}
+
         {loading ? (
-          <p className="text-muted">Loading requests...</p>
+          <p className="text-muted loading-pulse">Loading requests...</p>
+        ) : requests.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state__icon">🎵</div>
+            <h2 className="empty-state__title">No requests yet</h2>
+            <p className="empty-state__desc">
+              When patrons submit song requests, they&apos;ll appear here in real time.
+            </p>
+          </div>
         ) : (
           <>
             {pending.length > 0 && (
-              <section style={{ marginBottom: 'var(--space-8)' }}>
-                <h2 className="text-muted" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-                  New (pending)
-                </h2>
-                <ul className="list">
-                  {pending.map((req) => (
-                    <li key={req.id} className="list-item">
-                      <div style={{ marginBottom: 'var(--space-1)' }}><strong>{req.songTitle}</strong> — {req.artistName}</div>
-                      <div className="text-muted" style={{ fontSize: 'var(--text-sm)', marginBottom: 'var(--space-2)' }}>{req.venue.name} · {req.user.name}</div>
-                      <div className="flex-row" style={{ gap: 'var(--space-2)' }}>
-                        <button type="button" onClick={() => updateStatus(req.id, 'accepted')} disabled={updating === req.id} className="btn btn--success btn--sm">Accept</button>
-                        <button type="button" onClick={() => updateStatus(req.id, 'declined')} disabled={updating === req.id} className="btn btn--danger btn--sm">Decline</button>
+              <section className="dashboard__section">
+                <div className="dashboard__section-header">
+                  <h2 className="dashboard__section-title">Incoming</h2>
+                  <span className="dashboard__section-count">{pending.length}</span>
+                </div>
+                {pending.map((req) => (
+                  <div key={req.id} className="request-card">
+                    <div className="request-card__art">🎵</div>
+                    <div className="request-card__content">
+                      <h3 className="request-card__title">{req.songTitle}</h3>
+                      <p className="request-card__meta">{req.artistName} · {req.user.name}</p>
+                      <div className="request-card__actions">
+                        <button
+                          type="button"
+                          onClick={() => updateStatus(req.id, 'accepted')}
+                          disabled={updating === req.id}
+                          className="action-btn action-btn--accept"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateStatus(req.id, 'declined')}
+                          disabled={updating === req.id}
+                          className="action-btn action-btn--decline"
+                        >
+                          Decline
+                        </button>
                       </div>
-                    </li>
-                  ))}
-                </ul>
+                    </div>
+                  </div>
+                ))}
               </section>
             )}
+
             {accepted.length > 0 && (
-              <section style={{ marginBottom: 'var(--space-8)' }}>
-                <h2 className="text-muted" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-                  Queue (accepted)
-                </h2>
-                <ul className="list">
-                  {accepted.map((req) => (
-                    <li key={req.id} className="list-item">
-                      <div style={{ marginBottom: 'var(--space-1)' }}><strong>{req.songTitle}</strong> — {req.artistName}</div>
-                      <div className="text-muted" style={{ fontSize: 'var(--text-sm)', marginBottom: 'var(--space-2)' }}>{req.venue.name} · {req.user.name}</div>
-                      <button type="button" onClick={() => updateStatus(req.id, 'played')} disabled={updating === req.id} className="btn btn--info btn--sm">Mark played</button>
-                    </li>
-                  ))}
-                </ul>
+              <section className="dashboard__section">
+                <div className="dashboard__section-header">
+                  <h2 className="dashboard__section-title">Queue</h2>
+                  <span className="dashboard__section-count">{accepted.length}</span>
+                </div>
+                {accepted.map((req) => (
+                  <div key={req.id} className="request-card">
+                    <div className="request-card__art">🎵</div>
+                    <div className="request-card__content">
+                      <h3 className="request-card__title">{req.songTitle}</h3>
+                      <p className="request-card__meta">{req.artistName} · {req.user.name}</p>
+                      <div className="request-card__actions">
+                        <button
+                          type="button"
+                          onClick={() => updateStatus(req.id, 'played')}
+                          disabled={updating === req.id}
+                          className="action-btn action-btn--played"
+                        >
+                          Mark played
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </section>
             )}
+
             {others.length > 0 && (
-              <section>
-                <h2 className="text-muted" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-                  Declined / Played
-                </h2>
-                <ul className="list">
-                  {others.map((req) => (
-                    <li key={req.id} className="list-item list-item--muted">
-                      <strong>{req.songTitle}</strong> — {req.artistName} ·{' '}
-                      <span className={`badge badge--${req.status}`}>{req.status}</span>
-                    </li>
-                  ))}
-                </ul>
+              <section className="dashboard__section">
+                <div className="dashboard__section-header">
+                  <h2 className="dashboard__section-title">History</h2>
+                  <span className="dashboard__section-count">{others.length}</span>
+                </div>
+                {others.map((req) => (
+                  <div key={req.id} className="request-card request-card--muted">
+                    <div className="request-card__art" style={{ opacity: 0.5 }}>🎵</div>
+                    <div className="request-card__content">
+                      <h3 className="request-card__title">{req.songTitle}</h3>
+                      <p className="request-card__meta">
+                        {req.artistName} · 
+                        <span className={`badge badge--${req.status}`} style={{ marginLeft: 'var(--space-2)' }}>
+                          {req.status}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </section>
             )}
-            {requests.length === 0 && <p className="text-muted">No requests yet.</p>}
           </>
         )}
       </div>

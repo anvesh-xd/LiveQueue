@@ -82,9 +82,7 @@ export default function MyRequestsPage() {
                   <div className="listing-card__meta">
                     {req.artistName} · {req.venue.name}
                   </div>
-                  <span className={`status-${req.status}`} style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>
-                    {req.status}
-                  </span>
+                  <span className={`badge badge--${req.status}`}>{req.status}</span>
                 </div>
               </div>
             ))}

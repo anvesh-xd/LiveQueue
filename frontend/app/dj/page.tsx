@@ -143,7 +143,8 @@ export default function DjDashboardPage() {
                 <ul className="list">
                   {others.map((req) => (
                     <li key={req.id} className="list-item list-item--muted">
-                      <strong>{req.songTitle}</strong> — {req.artistName} · <span style={{ textTransform: 'capitalize' }}>{req.status}</span>
+                      <strong>{req.songTitle}</strong> — {req.artistName} ·{' '}
+                      <span className={`badge badge--${req.status}`}>{req.status}</span>
                     </li>
                   ))}
                 </ul>

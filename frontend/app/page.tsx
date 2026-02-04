@@ -53,7 +53,7 @@ export default function Home() {
             Live<span>Queue</span>
           </h1>
           <p className="hero__tagline">
-            Request songs at live events. DJs see your requests instantly and you get status updates in real time.
+            A modern way to request songs.
           </p>
           <div className="hero__actions">
             <Link href="/register" className="btn btn--primary btn--pill">

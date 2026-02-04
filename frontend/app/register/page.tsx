@@ -27,14 +27,16 @@ export default function RegisterPage() {
 
   return (
     <main className="page page--center">
-      <div className="card card--narrow card--center card--glass" style={{ padding: 'var(--space-10)' }}>
-        <h1 className="title" style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-2)' }}>Sign up</h1>
-        <p className="subtitle" style={{ marginBottom: 'var(--space-8)' }}>Create a patron account</p>
+      <div className="card card--narrow card--center">
+        <h1 className="title" style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-1)' }}>
+          Create an account
+        </h1>
+        <p className="subtitle">Start requesting songs at live events</p>
         <form onSubmit={handleSubmit} className="form">
           {error && <p className="text-error">{error}</p>}
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Your name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -56,12 +58,17 @@ export default function RegisterPage() {
             required
             className="input"
           />
-          <button type="submit" disabled={loading} className="btn btn--primary btn--pill" style={{ marginTop: 'var(--space-2)' }}>
-            {loading ? 'Creating account...' : 'Sign up'}
+          <button 
+            type="submit" 
+            disabled={loading} 
+            className="btn btn--primary"
+            style={{ marginTop: 'var(--space-2)', width: '100%' }}
+          >
+            {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
-        <p className="text-muted" style={{ marginTop: 'var(--space-8)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
-          Already have an account? <Link href="/login" className="link">Log in</Link>
+        <p className="text-muted" style={{ marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
+          Already have an account? <Link href="/login" className="link">Sign in</Link>
         </p>
       </div>
     </main>

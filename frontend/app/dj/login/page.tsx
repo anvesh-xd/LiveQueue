@@ -26,9 +26,11 @@ export default function DjLoginPage() {
 
   return (
     <main className="page page--center">
-      <div className="card card--narrow card--center card--glass" style={{ padding: 'var(--space-10)' }}>
-        <h1 className="title" style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-2)' }}>DJ login</h1>
-        <p className="subtitle" style={{ marginBottom: 'var(--space-8)' }}>Dashboard access</p>
+      <div className="card card--narrow card--center">
+        <h1 className="title" style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-1)' }}>
+          DJ Dashboard
+        </h1>
+        <p className="subtitle">Sign in to manage your requests</p>
         <form onSubmit={handleSubmit} className="form">
           {error && <p className="text-error">{error}</p>}
           <input
@@ -47,12 +49,17 @@ export default function DjLoginPage() {
             required
             className="input"
           />
-          <button type="submit" disabled={loading} className="btn btn--primary btn--pill" style={{ marginTop: 'var(--space-2)' }}>
-            {loading ? 'Logging in...' : 'Log in'}
+          <button 
+            type="submit" 
+            disabled={loading} 
+            className="btn btn--primary"
+            style={{ marginTop: 'var(--space-2)', width: '100%' }}
+          >
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-        <p className="text-muted" style={{ marginTop: 'var(--space-8)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
-          <Link href="/" className="back-link">← Back to home</Link>
+        <p className="text-muted" style={{ marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
+          <Link href="/" className="link--muted">← Back to home</Link>
         </p>
       </div>
     </main>

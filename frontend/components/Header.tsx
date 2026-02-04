@@ -1,32 +1,53 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useDjAuth } from '@/context/DjAuthContext';
 
 export function Header() {
+  const pathname = usePathname();
   const { user, loading: patronLoading, logout } = useAuth();
   const { djUser, loading: djLoading, djLogout } = useDjAuth();
+  const [scrolled, setScrolled] = useState(false);
 
   const loading = patronLoading || djLoading;
+  const isLanding = pathname === '/' && !user && !djUser;
+  const isDark = isLanding;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const headerClass = [
+    'header',
+    scrolled ? 'header--scrolled' : '',
+    isDark ? 'header--dark' : '',
+  ].filter(Boolean).join(' ');
 
   return (
-    <header className="header">
+    <header className={headerClass}>
       <div className="header__inner">
         <Link href="/" className="header__brand">
           LiveQueue
         </Link>
         <div className="header__nav-wrap">
-          {loading ? (
-            <span className="text-dim" style={{ fontSize: 'var(--text-sm)' }}>Loading...</span>
-          ) : (
+          {loading ? null : (
             <>
               <nav className="header__nav">
                 {djUser ? (
                   <>
                     <Link href="/" className="header__link">Home</Link>
                     <Link href="/dj/venues" className="header__link">My venues</Link>
-                    <Link href="/dj" className="header__link header__link--primary">DJ dashboard</Link>
+                    <Link href="/dj" className="header__link header__link--primary">Dashboard</Link>
                   </>
                 ) : user ? (
                   <>
@@ -37,7 +58,6 @@ export function Header() {
                   <>
                     <Link href="/login" className="header__link">Log in</Link>
                     <Link href="/register" className="header__link header__link--primary">Sign up</Link>
-                    <Link href="/dj/login" className="header__link">DJ login</Link>
                   </>
                 )}
               </nav>
@@ -45,7 +65,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={djUser ? djLogout : logout}
-                  className="header__logout btn btn--ghost btn--sm"
+                  className="header__logout"
                 >
                   Log out
                 </button>

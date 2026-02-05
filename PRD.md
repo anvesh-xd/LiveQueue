@@ -1,14 +1,11 @@
 # LIVEQUEUE
-## PRODUCT REQUIREMENTS DOCUMENT + BUILD PROMPTS
-
----
 
 ## PRODUCT REQUIREMENTS DOCUMENT
 
 **Product Name:** LiveQueue  
 **Owner:** Anvesh Sapkota  
-**Type:** Personal Engineering Project  
-**Status:** MVP Definition
+**Type:** Personal Project  
+**Status:** Prototype & Testing
 
 ---
 

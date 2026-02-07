@@ -25,7 +25,7 @@ export async function apiFetch<T>(
 export type User = { id: string; email: string; name: string; createdAt: string };
 export type Venue = { id: string; name: string; address: string | null; djs: { id: string; name: string }[] };
 export type RequestStatus = 'pending' | 'accepted' | 'declined' | 'played';
-export type SpotifyTrack = {
+export type DeezerTrack = {
   id: string;
   songTitle: string;
   artistName: string;
@@ -37,7 +37,7 @@ export type SongRequest = {
   userId: string;
   djId: string;
   venueId: string;
-  spotifyTrackId: string;
+  deezerTrackId: string;
   songTitle: string;
   artistName: string;
   albumArtUrl: string | null;

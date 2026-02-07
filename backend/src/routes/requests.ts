@@ -14,7 +14,7 @@ const requestSelect = {
   userId: true,
   djId: true,
   venueId: true,
-  spotifyTrackId: true,
+  deezerTrackId: true,
   songTitle: true,
   artistName: true,
   albumArtUrl: true,
@@ -29,9 +29,9 @@ const requestSelect = {
 // POST /requests — create request (patron only)
 router.post('/', requirePatron, async (req: PatronRequest, res: Response) => {
   try {
-    const { djId, venueId, spotifyTrackId, songTitle, artistName, albumArtUrl } = req.body;
-    if (!djId || !venueId || !spotifyTrackId || !songTitle || !artistName) {
-      res.status(400).json({ error: 'djId, venueId, spotifyTrackId, songTitle, artistName are required' });
+    const { djId, venueId, deezerTrackId, songTitle, artistName, albumArtUrl } = req.body;
+    if (!djId || !venueId || !deezerTrackId || !songTitle || !artistName) {
+      res.status(400).json({ error: 'djId, venueId, deezerTrackId, songTitle, artistName are required' });
       return;
     }
     const request = await prisma.request.create({
@@ -39,7 +39,7 @@ router.post('/', requirePatron, async (req: PatronRequest, res: Response) => {
         userId: req.userId,
         djId,
         venueId,
-        spotifyTrackId,
+        deezerTrackId,
         songTitle,
         artistName,
         albumArtUrl: albumArtUrl ?? null,

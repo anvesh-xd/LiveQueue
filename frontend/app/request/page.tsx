@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { apiFetch, type SpotifyTrack } from '@/lib/api';
+import { apiFetch, type DeezerTrack } from '@/lib/api';
 
 function RequestForm() {
   const searchParams = useSearchParams();
@@ -16,10 +16,10 @@ function RequestForm() {
   const djName = searchParams.get('djName') || 'DJ';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SpotifyTrack[]>([]);
+  const [searchResults, setSearchResults] = useState<DeezerTrack[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
-  const [selectedTrack, setSelectedTrack] = useState<SpotifyTrack | null>(null);
+  const [selectedTrack, setSelectedTrack] = useState<DeezerTrack | null>(null);
   const [manualTitle, setManualTitle] = useState('');
   const [manualArtist, setManualArtist] = useState('');
   const [error, setError] = useState('');
@@ -64,12 +64,12 @@ function RequestForm() {
     setSearching(true);
     setSearchResults([]);
     try {
-      const results = await apiFetch<SpotifyTrack[]>(`/spotify/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const results = await apiFetch<DeezerTrack[]>(`/deezer/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchResults(results);
       if (results.length === 0) setSearchError('No tracks found. Try different keywords.');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Search failed';
-      setSearchError(msg.includes('Spotify') ? 'Search unavailable. Enter manually below.' : msg);
+      setSearchError(msg.includes('Deezer') ? 'Search unavailable. Enter manually below.' : msg);
       setSearchResults([]);
     } finally {
       setSearching(false);
@@ -88,7 +88,7 @@ function RequestForm() {
           body: JSON.stringify({
             venueId,
             djId,
-            spotifyTrackId: selectedTrack.id,
+            deezerTrackId: selectedTrack.id,
             songTitle: selectedTrack.songTitle,
             artistName: selectedTrack.artistName,
             albumArtUrl: selectedTrack.albumArtUrl,
@@ -101,7 +101,7 @@ function RequestForm() {
           body: JSON.stringify({
             venueId,
             djId,
-            spotifyTrackId: `manual-${Date.now()}`,
+            deezerTrackId: `manual-${Date.now()}`,
             songTitle: manualTitle.trim(),
             artistName: manualArtist.trim(),
           }),

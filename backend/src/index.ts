@@ -6,7 +6,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import authRoutes from './routes/auth';
 import venuesRoutes from './routes/venues';
 import requestsRoutes from './routes/requests';
-import spotifyRoutes from './routes/spotify';
+import deezerRoutes from './routes/deezer';
 import { setIO } from './lib/socket';
 
 const app = express();
@@ -45,7 +45,7 @@ app.get('/health', (_req: Request, res: Response) => {
 app.use('/auth', authRoutes);
 app.use('/venues', venuesRoutes);
 app.use('/requests', requestsRoutes);
-app.use('/spotify', spotifyRoutes);
+app.use('/deezer', deezerRoutes);
 
 // Start server
 server.listen(PORT, () => {

@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET ?? '';
+// Critical: Crash if JWT_SECRET is not set (no insecure fallback)
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is required for security');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export type JwtPayload = { sub: string; type: 'patron' | 'dj' };
 

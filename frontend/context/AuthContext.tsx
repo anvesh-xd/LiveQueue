@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { apiFetch, type User } from '@/lib/api';
 
 const TOKEN_KEY = 'livequeue_token';
+const REFRESH_TOKEN_KEY = 'livequeue_refresh_token';
 const USER_KEY = 'livequeue_user';
 const DJ_TOKEN_KEY = 'livequeue_dj_token';
+const DJ_REFRESH_TOKEN_KEY = 'livequeue_dj_refresh_token';
 const DJ_USER_KEY = 'livequeue_dj_user';
 const CLEAR_DJ_EVENT = 'livequeue:clear-dj';
 const CLEAR_PATRON_EVENT = 'livequeue:clear-patron';
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
     const onClearPatron = () => {
       localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
       setToken(null);
       setUser(null);
@@ -62,14 +65,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const data = await apiFetch<{ user: User; token: string }>('/auth/login', {
+    const data = await apiFetch<{ user: User; token: string; refreshToken: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
     localStorage.removeItem(DJ_TOKEN_KEY);
+    localStorage.removeItem(DJ_REFRESH_TOKEN_KEY);
     localStorage.removeItem(DJ_USER_KEY);
     if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CLEAR_DJ_EVENT));
     localStorage.setItem(TOKEN_KEY, data.token);
+    localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     setToken(data.token);
     setUser(data.user);
@@ -77,14 +82,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   const register = useCallback(async (email: string, password: string, name: string) => {
-    const data = await apiFetch<{ user: User; token: string }>('/auth/register', {
+    const data = await apiFetch<{ user: User; token: string; refreshToken: string }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, password, name }),
     });
     localStorage.removeItem(DJ_TOKEN_KEY);
+    localStorage.removeItem(DJ_REFRESH_TOKEN_KEY);
     localStorage.removeItem(DJ_USER_KEY);
     if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CLEAR_DJ_EVENT));
     localStorage.setItem(TOKEN_KEY, data.token);
+    localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     setToken(data.token);
     setUser(data.user);
@@ -93,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     setToken(null);
     setUser(null);

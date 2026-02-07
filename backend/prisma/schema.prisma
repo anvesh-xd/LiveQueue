@@ -23,7 +23,8 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  requests     Request[]
+  requests      Request[]
+  refreshTokens RefreshToken[]
 }
 
 model DJ {
@@ -34,8 +35,9 @@ model DJ {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  venues       VenueDJ[]
-  requests     Request[]
+  venues        VenueDJ[]
+  requests      Request[]
+  refreshTokens RefreshToken[]
 }
 
 model Venue {
@@ -86,4 +88,22 @@ model Request {
   @@index([venueId])
   @@index([status])
   @@index([createdAt])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String?
+  djId      String?
+  type      String   // 'patron' or 'dj'
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dj   DJ?   @relation(fields: [djId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([djId])
+  @@index([expiresAt])
 }

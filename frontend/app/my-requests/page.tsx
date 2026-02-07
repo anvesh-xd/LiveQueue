@@ -29,8 +29,12 @@ export default function MyRequestsPage() {
   }, [token, user?.id]);
 
   useEffect(() => {
-    if (!user?.id) return;
-    const socket = io(API_URL, { path: '/', transports: ['websocket', 'polling'] });
+    if (!user?.id || !token) return;
+    const socket = io(API_URL, { 
+      path: '/', 
+      transports: ['websocket', 'polling'],
+      auth: { token }
+    });
     socketRef.current = socket;
     socket.on('connect', () => {
       socket.emit('join', { userId: user.id });
@@ -42,7 +46,7 @@ export default function MyRequestsPage() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [user?.id]);
+  }, [user?.id, token]);
 
   if (authLoading) {
     return (

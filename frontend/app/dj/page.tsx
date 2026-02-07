@@ -38,8 +38,12 @@ export default function DjDashboardPage() {
   }, [djToken, djUser?.id]);
 
   useEffect(() => {
-    if (!djUser?.id) return;
-    const socket = io(API_URL, { path: '/', transports: ['websocket', 'polling'] });
+    if (!djUser?.id || !djToken) return;
+    const socket = io(API_URL, { 
+      path: '/', 
+      transports: ['websocket', 'polling'],
+      auth: { token: djToken }
+    });
     socketRef.current = socket;
     socket.on('connect', () => {
       socket.emit('join', { djId: djUser.id });
@@ -50,7 +54,7 @@ export default function DjDashboardPage() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [djUser?.id]);
+  }, [djUser?.id, djToken]);
 
   async function updateStatus(id: string, status: 'accepted' | 'declined' | 'played') {
     if (!djToken) return;

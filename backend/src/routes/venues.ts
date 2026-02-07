@@ -1,10 +1,17 @@
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { requireDj } from '../middleware/auth';
 
 const router = Router();
 
 type DjRequest = Request & { djId: string };
+
+// Validation schemas
+const createVenueSchema = z.object({
+  name: z.string().min(1, 'Venue name is required').max(100, 'Venue name too long').trim(),
+  address: z.string().max(500, 'Address too long').trim().optional(),
+});
 
 function flattenVenue(v: {
   id: string;
@@ -66,15 +73,17 @@ router.get('/', async (_req: Request, res: Response) => {
 // POST /venues — create venue and link current DJ (DJ only)
 router.post('/', requireDj, async (req: DjRequest, res: Response) => {
   try {
-    const { name, address } = req.body as { name?: string; address?: string };
-    if (!name || typeof name !== 'string' || !name.trim()) {
-      res.status(400).json({ error: 'Venue name is required' });
+    const result = createVenueSchema.safeParse(req.body);
+    if (!result.success) {
+      res.status(400).json({ error: result.error.errors[0].message });
       return;
     }
+    const { name, address } = result.data;
+    
     const venue = await prisma.venue.create({
       data: {
-        name: name.trim(),
-        address: typeof address === 'string' ? address.trim() || null : null,
+        name,
+        address: address || null,
       },
       select: {
         id: true,

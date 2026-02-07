@@ -43,18 +43,19 @@ const requestSelect = {
 };
 
 // POST /requests — create request (patron only)
-router.post('/', requirePatron, async (req: PatronRequest, res: Response) => {
+router.post('/', requirePatron, async (req: Request, res: Response) => {
+  const patronReq = req as PatronRequest;
   try {
     const result = createRequestSchema.safeParse(req.body);
     if (!result.success) {
-      res.status(400).json({ error: result.error.errors[0].message });
+      res.status(400).json({ error: result.error.issues[0].message });
       return;
     }
     const { djId, venueId, deezerTrackId, songTitle, artistName, albumArtUrl } = result.data;
     
     const request = await prisma.request.create({
       data: {
-        userId: req.userId,
+        userId: patronReq.userId,
         djId,
         venueId,
         deezerTrackId,
@@ -74,10 +75,11 @@ router.post('/', requirePatron, async (req: PatronRequest, res: Response) => {
 });
 
 // GET /requests/me — my requests (patron only)
-router.get('/me', requirePatron, async (req: PatronRequest, res: Response) => {
+router.get('/me', requirePatron, async (req: Request, res: Response) => {
+  const patronReq = req as PatronRequest;
   try {
     const requests = await prisma.request.findMany({
-      where: { userId: req.userId },
+      where: { userId: patronReq.userId },
       orderBy: { createdAt: 'desc' },
       select: requestSelect,
     });
@@ -89,10 +91,11 @@ router.get('/me', requirePatron, async (req: PatronRequest, res: Response) => {
 });
 
 // GET /requests/dj — requests for this DJ (optional ?venueId)
-router.get('/dj', requireDj, async (req: DjRequest, res: Response) => {
+router.get('/dj', requireDj, async (req: Request, res: Response) => {
+  const djReq = req as DjRequest;
   try {
     const venueId = req.query.venueId as string | undefined;
-    const where: { djId: string; venueId?: string } = { djId: req.djId };
+    const where: { djId: string; venueId?: string } = { djId: djReq.djId };
     if (venueId) where.venueId = venueId;
     const requests = await prisma.request.findMany({
       where,
@@ -107,17 +110,18 @@ router.get('/dj', requireDj, async (req: DjRequest, res: Response) => {
 });
 
 // PATCH /requests/:id — update status (DJ only)
-router.patch('/:id', requireDj, async (req: DjRequest, res: Response) => {
+router.patch('/:id', requireDj, async (req: Request, res: Response) => {
+  const djReq = req as DjRequest;
   try {
     const { id } = req.params;
     const result = updateRequestSchema.safeParse(req.body);
     if (!result.success) {
-      res.status(400).json({ error: result.error.errors[0].message });
+      res.status(400).json({ error: result.error.issues[0].message });
       return;
     }
     
     const existing = await prisma.request.findFirst({
-      where: { id, djId: req.djId },
+      where: { id, djId: djReq.djId },
     });
     if (!existing) {
       res.status(404).json({ error: 'Request not found' });

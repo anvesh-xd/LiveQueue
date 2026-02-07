@@ -56,7 +56,7 @@ router.post('/register', async (req: Request, res: Response) => {
   try {
     const result = registerSchema.safeParse(req.body);
     if (!result.success) {
-      res.status(400).json({ error: result.error.errors[0].message });
+      res.status(400).json({ error: result.error.issues[0].message });
       return;
     }
     const { email, password, name } = result.data;
@@ -89,7 +89,7 @@ router.post('/login', async (req: Request, res: Response) => {
   try {
     const result = loginSchema.safeParse(req.body);
     if (!result.success) {
-      res.status(400).json({ error: result.error.errors[0].message });
+      res.status(400).json({ error: result.error.issues[0].message });
       return;
     }
     const { email, password } = result.data;
@@ -121,7 +121,7 @@ router.post('/login-dj', async (req: Request, res: Response) => {
   try {
     const result = loginSchema.safeParse(req.body);
     if (!result.success) {
-      res.status(400).json({ error: result.error.errors[0].message });
+      res.status(400).json({ error: result.error.issues[0].message });
       return;
     }
     const { email, password } = result.data;
@@ -153,7 +153,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
   try {
     const result = refreshSchema.safeParse(req.body);
     if (!result.success) {
-      res.status(400).json({ error: result.error.errors[0].message });
+      res.status(400).json({ error: result.error.issues[0].message });
       return;
     }
     const { refreshToken: token } = result.data;

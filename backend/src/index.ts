@@ -12,10 +12,6 @@ import requestsRoutes from './routes/requests';
 import deezerRoutes from './routes/deezer';
 import { setIO } from './lib/socket';
 
-const app = express();
-const PORT = process.env.PORT || 3001;
-const server = http.createServer(app);
-
 // Critical: Crash if JWT_SECRET is not set
 if (!process.env.JWT_SECRET) {
   throw new Error('FATAL: JWT_SECRET environment variable is required for security');

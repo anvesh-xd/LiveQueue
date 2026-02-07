@@ -28,10 +28,11 @@ function flattenVenue(v: {
 }
 
 // GET /venues/dj — list venues linked to current DJ (DJ only)
-router.get('/dj', requireDj, async (req: DjRequest, res: Response) => {
+router.get('/dj', requireDj, async (req: Request, res: Response) => {
+  const djReq = req as DjRequest;
   try {
     const venues = await prisma.venue.findMany({
-      where: { djs: { some: { djId: req.djId } } },
+      where: { djs: { some: { djId: djReq.djId } } },
       orderBy: { name: 'asc' },
       select: {
         id: true,
@@ -71,11 +72,12 @@ router.get('/', async (_req: Request, res: Response) => {
 });
 
 // POST /venues — create venue and link current DJ (DJ only)
-router.post('/', requireDj, async (req: DjRequest, res: Response) => {
+router.post('/', requireDj, async (req: Request, res: Response) => {
+  const djReq = req as DjRequest;
   try {
     const result = createVenueSchema.safeParse(req.body);
     if (!result.success) {
-      res.status(400).json({ error: result.error.errors[0].message });
+      res.status(400).json({ error: result.error.issues[0].message });
       return;
     }
     const { name, address } = result.data;
@@ -95,7 +97,7 @@ router.post('/', requireDj, async (req: DjRequest, res: Response) => {
       },
     });
     await prisma.venueDJ.create({
-      data: { venueId: venue.id, djId: req.djId },
+      data: { venueId: venue.id, djId: djReq.djId },
     });
     const withDjs = await prisma.venue.findUnique({
       where: { id: venue.id },
@@ -116,7 +118,8 @@ router.post('/', requireDj, async (req: DjRequest, res: Response) => {
 });
 
 // POST /venues/:venueId/link — link current DJ to existing venue (DJ only)
-router.post('/:venueId/link', requireDj, async (req: DjRequest, res: Response) => {
+router.post('/:venueId/link', requireDj, async (req: Request, res: Response) => {
+  const djReq = req as DjRequest;
   try {
     const { venueId } = req.params;
     const existing = await prisma.venue.findUnique({
@@ -128,14 +131,14 @@ router.post('/:venueId/link', requireDj, async (req: DjRequest, res: Response) =
       return;
     }
     const already = await prisma.venueDJ.findUnique({
-      where: { venueId_djId: { venueId, djId: req.djId } },
+      where: { venueId_djId: { venueId, djId: djReq.djId } },
     });
     if (already) {
       res.status(409).json({ error: 'You are already linked to this venue' });
       return;
     }
     await prisma.venueDJ.create({
-      data: { venueId, djId: req.djId },
+      data: { venueId, djId: djReq.djId },
     });
     const updated = await prisma.venue.findUnique({
       where: { id: venueId },

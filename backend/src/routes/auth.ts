@@ -32,6 +32,13 @@ const refreshSchema = z.object({
   refreshToken: z.string().min(1, 'Refresh token is required'),
 });
 
+const registerDjSchema = z.object({
+  email: z.string().email('Invalid email format').max(255, 'Email too long'),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(128, 'Password too long'),
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long').trim(),
+  inviteCode: z.string().min(1, 'Invite code is required'),
+});
+
 // Helper: Generate refresh token
 async function createRefreshToken(userId: string, type: 'patron' | 'dj'): Promise<string> {
   const token = randomBytes(32).toString('hex');
@@ -145,6 +152,66 @@ router.post('/login-dj', async (req: Request, res: Response) => {
   } catch (e) {
     console.error('Auth login-dj error:', e);
     res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// POST /auth/register-dj — register DJ (requires invite code)
+router.post('/register-dj', async (req: Request, res: Response) => {
+  try {
+    const result = registerDjSchema.safeParse(req.body);
+    if (!result.success) {
+      res.status(400).json({ error: result.error.issues[0].message });
+      return;
+    }
+    const { email, password, name, inviteCode } = result.data;
+    
+    // Validate invite code
+    const invite = await prisma.inviteCode.findUnique({
+      where: { code: inviteCode },
+    });
+    
+    if (!invite) {
+      res.status(400).json({ error: 'Invalid invite code' });
+      return;
+    }
+    
+    if (invite.used) {
+      res.status(400).json({ error: 'This invite code has already been used' });
+      return;
+    }
+    
+    // Check if email already exists
+    const existing = await prisma.dJ.findUnique({ where: { email } });
+    if (existing) {
+      res.status(409).json({ error: 'Email already registered' });
+      return;
+    }
+    
+    // Create DJ account
+    const passwordHash = bcrypt.hashSync(password, SALT_ROUNDS);
+    const dj = await prisma.dJ.create({
+      data: { email, passwordHash, name },
+      select: { id: true, email: true, name: true, createdAt: true },
+    });
+    
+    // Mark invite code as used
+    await prisma.inviteCode.update({
+      where: { id: invite.id },
+      data: { used: true, usedByDjId: dj.id },
+    });
+    
+    // Issue tokens
+    const token = jwt.sign(
+      { sub: dj.id, type: 'dj' as const },
+      JWT_SECRET,
+      { expiresIn: ACCESS_TOKEN_EXPIRY }
+    );
+    const refreshToken = await createRefreshToken(dj.id, 'dj');
+    
+    res.status(201).json({ user: dj, token, refreshToken });
+  } catch (e) {
+    console.error('Auth register-dj error:', e);
+    res.status(500).json({ error: 'Registration failed' });
   }
 });
 

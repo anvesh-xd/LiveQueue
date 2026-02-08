@@ -18,6 +18,7 @@ type DjAuthContextType = {
   djToken: string | null;
   loading: boolean;
   djLogin: (email: string, password: string) => Promise<void>;
+  djRegister: (email: string, password: string, name: string, inviteCode: string) => Promise<void>;
   djLogout: () => void;
 };
 
@@ -80,6 +81,23 @@ export function DjAuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/dj');
   }, [router]);
 
+  const djRegister = useCallback(async (email: string, password: string, name: string, inviteCode: string) => {
+    const data = await apiFetch<{ user: User; token: string; refreshToken: string }>('/auth/register-dj', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name, inviteCode }),
+    });
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CLEAR_PATRON_EVENT));
+    localStorage.setItem(DJ_TOKEN_KEY, data.token);
+    localStorage.setItem(DJ_REFRESH_TOKEN_KEY, data.refreshToken);
+    localStorage.setItem(DJ_USER_KEY, JSON.stringify(data.user));
+    setDjToken(data.token);
+    setDjUser(data.user);
+    router.push('/dj');
+  }, [router]);
+
   const djLogout = useCallback(() => {
     localStorage.removeItem(DJ_TOKEN_KEY);
     localStorage.removeItem(DJ_REFRESH_TOKEN_KEY);
@@ -90,7 +108,7 @@ export function DjAuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <DjAuthContext.Provider value={{ djUser, djToken, loading, djLogin, djLogout }}>
+    <DjAuthContext.Provider value={{ djUser, djToken, loading, djLogin, djRegister, djLogout }}>
       {children}
     </DjAuthContext.Provider>
   );

@@ -38,6 +38,7 @@ model DJ {
   venues        VenueDJ[]
   requests      Request[]
   refreshTokens RefreshToken[]
+  inviteCode    InviteCode?
 }
 
 model Venue {
@@ -106,4 +107,18 @@ model RefreshToken {
   @@index([userId])
   @@index([djId])
   @@index([expiresAt])
+}
+
+model InviteCode {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  used       Boolean  @default(false)
+  usedByDjId String?  @unique
+  label      String?
+  createdAt  DateTime @default(now())
+
+  usedByDj   DJ?      @relation(fields: [usedByDjId], references: [id], onDelete: SetNull)
+
+  @@index([code])
+  @@index([used])
 }

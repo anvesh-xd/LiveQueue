@@ -4,21 +4,23 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useDjAuth } from '@/context/DjAuthContext';
 
-export default function DjLoginPage() {
+export default function DjRegisterPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { djLogin } = useDjAuth();
+  const { djRegister } = useDjAuth();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await djLogin(email, password);
+      await djRegister(email, password, name, inviteCode);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -28,12 +30,22 @@ export default function DjLoginPage() {
     <main className="auth-page">
       <div className="auth-page__content">
         <div className="auth-page__header">
-          <h1 className="auth-page__title">DJ Dashboard</h1>
-          <p className="auth-page__subtitle">Sign in to manage requests</p>
+          <h1 className="auth-page__title">DJ Registration</h1>
+          <p className="auth-page__subtitle">Create your DJ account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-page__form">
           {error && <p className="auth-page__error">{error}</p>}
+          
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="auth-page__input"
+            autoComplete="name"
+          />
           
           <input
             type="email"
@@ -47,23 +59,33 @@ export default function DjLoginPage() {
           
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Password (min 8 characters)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            minLength={8}
             className="auth-page__input"
-            autoComplete="current-password"
+            autoComplete="new-password"
+          />
+          
+          <input
+            type="text"
+            placeholder="Invite Code"
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+            required
+            className="auth-page__input"
+            autoComplete="off"
+            maxLength={8}
           />
           
           <button type="submit" disabled={loading} className="auth-page__submit">
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
 
         <p className="auth-page__footer">
-          Need an account? <Link href="/dj/register">Register as DJ</Link>
-          <br />
-          <Link href="/">← Back to home</Link>
+          Already have an account? <Link href="/dj/login">Sign in</Link>
         </p>
       </div>
     </main>

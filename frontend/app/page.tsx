@@ -26,7 +26,7 @@ export default function Home() {
 
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
+  }, [loading, user]);
 
   if (loading) {
     return (

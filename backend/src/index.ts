@@ -10,6 +10,7 @@ import authRoutes from './routes/auth';
 import venuesRoutes from './routes/venues';
 import requestsRoutes from './routes/requests';
 import deezerRoutes from './routes/deezer';
+import adminRoutes from './routes/admin';
 import { setIO } from './lib/socket';
 
 // Critical: Crash if JWT_SECRET is not set
@@ -122,6 +123,7 @@ app.use('/auth', authLimiter, authRoutes);
 app.use('/venues', venuesRoutes);
 app.use('/requests', requestsRoutes);
 app.use('/deezer', deezerRoutes);
+app.use('/admin', adminRoutes);
 
 // Start server
 server.listen(PORT, () => {

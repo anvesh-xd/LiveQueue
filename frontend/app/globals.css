@@ -1284,7 +1284,7 @@ img { max-width: 100%; height: auto; }
   font-weight: var(--font-medium);
   letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-2);
 }
 
@@ -1293,6 +1293,7 @@ img { max-width: 100%; height: auto; }
   font-weight: var(--font-semibold);
   letter-spacing: var(--tracking-tight);
   line-height: var(--leading-tight);
+  color: var(--color-text);
 }
 
 .dashboard__section {
@@ -1619,6 +1620,7 @@ img { max-width: 100%; height: auto; }
   font-weight: var(--font-semibold);
   letter-spacing: var(--tracking-tight);
   margin-bottom: var(--space-2);
+  color: var(--color-text);
 }
 
 .request-page__venue {
@@ -1818,6 +1820,7 @@ img { max-width: 100%; height: auto; }
   font-weight: var(--font-semibold);
   letter-spacing: var(--tracking-tight);
   margin-bottom: var(--space-2);
+  color: var(--color-text);
 }
 
 .requests-page__subtitle {

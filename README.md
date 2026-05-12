@@ -1,52 +1,31 @@
 # LiveQueue
 
-A real-time web application that allows patrons at live venues to submit song requests digitally while DJs manage and respond to those requests through a live dashboard.
+Real-time song request platform for live music venues.
 
-This project explores real-time systems, multi-user workflows, API integrations, and full-stack application architecture.
+Patrons submit requests digitally. DJs manage and respond through a live dashboard — with full control over queue order, approvals, and pricing tiers.
 
-## Features
+## What it does
 
-**Patron experience**
-- Sign up and log in
-- Select a venue
-- Request songs via Deezer search or manual entry
-- View live request status: Pending → Accepted / Declined → Played
-
-**DJ dashboard**
-- Secure login
-- Real-time incoming request feed
-- Accept or decline requests
-- View and manage the request queue
-- Mark songs as played
-
-**System**
-- Real-time updates using Socket.io (WebSockets)
-- Role-based authentication (Patron / DJ)
-- PostgreSQL + Prisma
-- Monorepo: Next.js frontend, Express backend
-
-## Motivation
-
-At live venues, DJs are often interrupted by patrons requesting songs verbally, which disrupts performance flow and creates uncertainty for patrons. LiveQueue digitizes this interaction while preserving DJ control and improving transparency for users.
-
-This project was built as a personal engineering project to practice real-time application design, API integrations, system architecture, and full-stack development.
+- Patrons browse the setlist and submit song requests in real time
+- DJs see a live queue dashboard with accept/reject/reorder controls
+- Tiered pricing model balances patron demand with performer autonomy
+- WebSocket-powered updates with no page refresh needed
 
 ## Tech stack
 
-| Layer     | Tech |
-|----------|------|
-| Frontend | Next.js 14, React 18, TypeScript |
-| Backend  | Node.js, Express, TypeScript |
-| Database | PostgreSQL, Prisma ORM |
-| Real-time | Socket.io |
-| Song search | [Deezer Simple API](https://developers.deezer.com/api) (no API key required) |
+`Next.js` `TypeScript` `PostgreSQL` `Socket.io` `Prisma`
+
+## Design decisions
+
+- **DJ-control-first** — performers always have override authority over the queue
+- **Marketplace fairness** — pricing mechanics balance incentives across patrons, DJs, and venues
+- **Real-time first** — Socket.io chosen over polling for sub-second queue updates
+
+## Status
+
+MVP built to validate real-time queue logic and marketplace incentive constraints.
 
 ## Architecture
-
-Monorepo layout:
-
-- **Backend** (`/backend`) — Express API, auth, venues, requests CRUD, Socket.io
-- **Frontend** (`/frontend`) — Next.js app, patron flows, DJ dashboard
 
 ```
 Patron Web App  ── REST API ──►  Backend (Express)  ──►  PostgreSQL

@@ -183,7 +183,7 @@ export default function DjVenuesPage() {
                       <p className="venue-row__name">{v.name}</p>
                       <p className="venue-row__meta">{v.address || '— No address —'}</p>
                     </div>
-                    <span className="status status--accepted">
+                    <span className="venue-row__badge">
                       <span className="dot" aria-hidden="true" />
                       Linked
                     </span>

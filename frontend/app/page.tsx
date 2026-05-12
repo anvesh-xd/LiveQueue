@@ -112,9 +112,7 @@ export default function Home() {
             <span className="hero__headline-line">
               <em className="hero__headline-italic">the</em>
             </span>
-            <span className="hero__headline-line">
-              queue<span className="hero__headline-stamp">Live</span>
-            </span>
+            <span className="hero__headline-line">queue.</span>
           </h1>
 
           <p className="hero__copy">
@@ -134,29 +132,10 @@ export default function Home() {
               DJs — enter here
             </Link>
           </div>
-
-          <dl className="hero__meta">
-            <div className="hero__meta-item">
-              <dt className="hero__meta-label">Latency</dt>
-              <dd className="hero__meta-value">&lt;200ms</dd>
-            </div>
-            <div className="hero__meta-item">
-              <dt className="hero__meta-label">Channel</dt>
-              <dd className="hero__meta-value">Web only</dd>
-            </div>
-            <div className="hero__meta-item">
-              <dt className="hero__meta-label">Stack</dt>
-              <dd className="hero__meta-value">Live socket</dd>
-            </div>
-          </dl>
         </div>
 
         <div className="hero__right">
           <div className="hero__phone-wrap">
-            <span className="hero__phone-tag">
-              <span className="dot" aria-hidden="true" />
-              Live now
-            </span>
             <div className="hero__phone">
               <div className="hero__screen">
                 <div className="hero__notch" aria-hidden="true" />

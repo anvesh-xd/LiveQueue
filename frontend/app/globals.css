@@ -194,8 +194,8 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 .marquee--strobe {
-  background: var(--strobe);
-  color: var(--pitch);
+  background: var(--pitch);
+  color: var(--strobe);
   border-color: var(--strobe);
 }
 
@@ -374,7 +374,7 @@ img { max-width: 100%; height: auto; display: block; }
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: 72px;
-  align-items: end;
+  align-items: center;
   min-height: 100vh;
 }
 
@@ -502,7 +502,7 @@ img { max-width: 100%; height: auto; display: block; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 26px;
 }
 
@@ -2307,6 +2307,24 @@ img { max-width: 100%; height: auto; display: block; }
   border: 1px solid var(--line);
   border-radius: 999px;
   transition: all var(--dur-fast);
+}
+
+.venue-row__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--strobe);
+  white-space: nowrap;
+}
+
+.venue-row__badge .dot {
+  width: 6px;
+  height: 6px;
 }
 
 .venue-row__action:hover:not(:disabled) {

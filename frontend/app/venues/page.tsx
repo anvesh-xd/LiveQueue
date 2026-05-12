@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { VenueLogo } from '@/components/VenueLogo';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch, type Venue } from '@/lib/api';
+import { ArrowUpRight } from '@/components/Icons';
 
 export default function VenuesPage() {
   const { user, token, loading: authLoading } = useAuth();
@@ -21,9 +23,9 @@ export default function VenuesPage() {
 
   if (authLoading) {
     return (
-      <main className="browse-page">
-        <div className="browse-page__inner">
-          <p className="text-muted loading-pulse">Loading</p>
+      <main className="page">
+        <div className="page__shell">
+          <span className="loading">Loading floors</span>
         </div>
       </main>
     );
@@ -31,13 +33,16 @@ export default function VenuesPage() {
 
   if (!user) {
     return (
-      <main className="browse-page">
-        <div className="browse-page__inner">
-          <div className="empty-state">
-            <div className="empty-state__icon">🔒</div>
-            <h2 className="empty-state__title">Sign in required</h2>
-            <p className="empty-state__desc">
-              Please <Link href="/login" className="link">log in</Link> to browse venues.
+      <main className="page page--center">
+        <div className="page__shell">
+          <div className="empty">
+            <p className="empty__mark">
+              <span className="dot" />
+              Locked door
+            </p>
+            <h2 className="empty__title"><em>Sign in required.</em></h2>
+            <p className="empty__desc">
+              <Link href="/login" className="link link--strobe">Sign in</Link> to browse venues and request songs.
             </p>
           </div>
         </div>
@@ -46,52 +51,76 @@ export default function VenuesPage() {
   }
 
   return (
-    <main className="browse-page">
-      <div className="browse-page__inner">
-        <header className="browse-page__header">
-          <h1 className="browse-page__title">Venues</h1>
-          <p className="browse-page__subtitle">Pick a venue to request a song</p>
+    <main className="page">
+      <div className="page__shell">
+        <header className="page__header">
+          <p className="page__eyebrow">
+            <span className="dot" />
+            Tonight · live floors
+          </p>
+          <h1 className="page__title">
+            Pick <em>a venue.</em>
+          </h1>
+          <p className="page__subtitle">Find a DJ on the deck and send your track.</p>
         </header>
 
-        {error && <p className="auth-page__error" style={{ marginBottom: 'var(--space-6)' }}>{error}</p>}
+        {error && <p className="banner-error" role="alert">{error}</p>}
 
         {loading ? (
-          <p className="text-muted loading-pulse">Loading venues...</p>
+          <span className="loading">Loading venues</span>
         ) : venues.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state__icon">📍</div>
-            <h2 className="empty-state__title">No venues yet</h2>
-            <p className="empty-state__desc">Check back later for available venues.</p>
+          <div className="empty">
+            <p className="empty__mark">
+              <span className="dot dot--idle" />
+              No floors live
+            </p>
+            <h2 className="empty__title"><em>No venues yet.</em></h2>
+            <p className="empty__desc">
+              On a fresh deploy the database is empty until you run the seed (creates{' '}
+              <strong>Evolve, VyNX, and Hyze</strong> and demo accounts). See{' '}
+              <Link href="/demo" className="link link--strobe">Try the demo</Link> for the one-line setup,
+              or ask a DJ to add venues from their dashboard.
+            </p>
           </div>
         ) : (
           <div className="venue-grid">
-            {venues.map((venue) => (
-              <div key={venue.id} className="venue-card">
-                <div className="venue-card__header">
-                  <h2 className="venue-card__name">{venue.name}</h2>
-                  <p className="venue-card__address">{venue.address || 'No address listed'}</p>
+            {venues.map((venue, i) => (
+              <article key={venue.id} className="venue-card">
+                <div className="venue-card__top">
+                  <span className="venue-card__index">
+                    {String(i + 1).padStart(2, '0')} / {String(venues.length).padStart(2, '0')}
+                  </span>
+                  <span className="venue-card__live">
+                    <span className="dot" />
+                    Live
+                  </span>
                 </div>
-                <div className="venue-card__body">
+
+                <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start' }}>
+                  <VenueLogo name={venue.name} logoUrl={venue.logoUrl} />
+                  <div className="venue-card__heading">
+                    <h2 className="venue-card__name">{venue.name}</h2>
+                    <p className="venue-card__address">{venue.address || '— No address listed —'}</p>
+                  </div>
+                </div>
+
+                <div className="venue-card__djs">
                   {venue.djs.length > 0 ? (
-                    <div className="venue-card__dj-list">
-                      {venue.djs.map((dj) => (
-                        <Link
-                          key={dj.id}
-                          href={`/request?venueId=${encodeURIComponent(venue.id)}&venueName=${encodeURIComponent(venue.name)}&djId=${encodeURIComponent(dj.id)}&djName=${encodeURIComponent(dj.name)}`}
-                          className="venue-card__dj-btn"
-                        >
-                          <span>Request · {dj.name}</span>
-                          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <path d="M6 4l4 4-4 4" />
-                          </svg>
-                        </Link>
-                      ))}
-                    </div>
+                    venue.djs.map((dj) => (
+                      <Link
+                        key={dj.id}
+                        href={`/request?venueId=${encodeURIComponent(venue.id)}&venueName=${encodeURIComponent(venue.name)}&djId=${encodeURIComponent(dj.id)}&djName=${encodeURIComponent(dj.name)}`}
+                        className="venue-card__dj"
+                      >
+                        <span className="venue-card__dj-name">{dj.name}</span>
+                        <ArrowUpRight className="venue-card__dj-arrow" size={14} />
+                      </Link>
+                    ))
                   ) : (
-                    <p className="venue-card__empty">No DJs available</p>
+                    <p className="venue-card__empty">— No DJ on the deck —</p>
                   )}
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         )}

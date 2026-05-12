@@ -16,38 +16,38 @@ export function Header() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
-    
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <header className={`header ${scrolled ? 'header--scrolled' : ''}`}>
       <div className="header__inner">
-        <Link href="/" className="header__brand">
+        <Link href="/" className="header__brand" aria-label="LiveQueue">
+          <span className="header__brand-mark" aria-hidden="true" />
           LiveQueue
         </Link>
         <div className="header__nav-wrap">
           {loading ? null : (
             <>
-              <nav className="header__nav">
+              <nav className="header__nav" aria-label="Primary">
                 {djUser ? (
                   <>
                     <Link href="/" className="header__link">Home</Link>
-                    <Link href="/dj/venues" className="header__link">My venues</Link>
-                    <Link href="/dj" className="header__link header__link--primary">Dashboard</Link>
+                    <Link href="/dj/venues" className="header__link">Venues</Link>
+                    <Link href="/dj" className="header__link header__link--primary">Floor</Link>
                   </>
                 ) : user ? (
                   <>
                     <Link href="/venues" className="header__link">Venues</Link>
-                    <Link href="/my-requests" className="header__link">My requests</Link>
+                    <Link href="/my-requests" className="header__link">Requests</Link>
                   </>
                 ) : (
                   <>
-                    <Link href="/login" className="header__link">Log in</Link>
-                    <Link href="/register" className="header__link header__link--primary">Sign up</Link>
+                    <Link href="/demo" className="header__link">Demo</Link>
+                    <Link href="/login" className="header__link">Sign in</Link>
+                    <Link href="/register" className="header__link header__link--primary">Get in</Link>
                   </>
                 )}
               </nav>

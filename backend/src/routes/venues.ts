@@ -17,12 +17,14 @@ function flattenVenue(v: {
   id: string;
   name: string;
   address: string | null;
+  logoUrl: string | null;
   djs: { djId: string; dj: { id: string; name: string } }[];
 }) {
   return {
     id: v.id,
     name: v.name,
     address: v.address,
+    logoUrl: v.logoUrl,
     djs: v.djs.map((d) => ({ id: d.dj.id, name: d.dj.name })),
   };
 }
@@ -38,6 +40,7 @@ router.get('/dj', requireDj, async (req: Request, res: Response) => {
         id: true,
         name: true,
         address: true,
+        logoUrl: true,
         djs: {
           select: { djId: true, dj: { select: { id: true, name: true } } },
         },
@@ -59,6 +62,7 @@ router.get('/', async (_req: Request, res: Response) => {
         id: true,
         name: true,
         address: true,
+        logoUrl: true,
         djs: {
           select: { djId: true, dj: { select: { id: true, name: true } } },
         },
@@ -86,11 +90,13 @@ router.post('/', requireDj, async (req: Request, res: Response) => {
       data: {
         name,
         address: address || null,
+        logoUrl: null,
       },
       select: {
         id: true,
         name: true,
         address: true,
+        logoUrl: true,
         djs: {
           select: { djId: true, dj: { select: { id: true, name: true } } },
         },
@@ -105,6 +111,7 @@ router.post('/', requireDj, async (req: Request, res: Response) => {
         id: true,
         name: true,
         address: true,
+        logoUrl: true,
         djs: {
           select: { djId: true, dj: { select: { id: true, name: true } } },
         },
@@ -124,7 +131,13 @@ router.post('/:venueId/link', requireDj, async (req: Request, res: Response) => 
     const { venueId } = req.params;
     const existing = await prisma.venue.findUnique({
       where: { id: venueId },
-      select: { id: true, name: true, address: true, djs: { select: { djId: true, dj: { select: { id: true, name: true } } } } },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        logoUrl: true,
+        djs: { select: { djId: true, dj: { select: { id: true, name: true } } } },
+      },
     });
     if (!existing) {
       res.status(404).json({ error: 'Venue not found' });
@@ -146,12 +159,23 @@ router.post('/:venueId/link', requireDj, async (req: Request, res: Response) => 
         id: true,
         name: true,
         address: true,
+        logoUrl: true,
         djs: {
           select: { djId: true, dj: { select: { id: true, name: true } } },
         },
       },
     });
-    res.status(201).json(updated ? flattenVenue(updated) : { id: existing.id, name: existing.name, address: existing.address, djs: existing.djs.map((d) => ({ id: d.dj.id, name: d.dj.name })) });
+    res.status(201).json(
+      updated
+        ? flattenVenue(updated)
+        : {
+            id: existing.id,
+            name: existing.name,
+            address: existing.address,
+            logoUrl: existing.logoUrl,
+            djs: existing.djs.map((d) => ({ id: d.dj.id, name: d.dj.name })),
+          }
+    );
   } catch (e) {
     console.error('POST /venues/:venueId/link error:', e);
     res.status(500).json({ error: 'Failed to link to venue' });

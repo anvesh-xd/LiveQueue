@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { ArrowRight, ArrowLeft } from '@/components/Icons';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -42,18 +43,17 @@ export default function AdminPage() {
     if (authenticated && adminSecret) {
       fetchCodes();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated, adminSecret]);
 
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       const response = await fetch(`${API_BASE}/admin/invite-codes`, {
         headers: { Authorization: `Bearer ${inputSecret}` },
       });
-
       if (response.ok) {
         sessionStorage.setItem('admin_secret', inputSecret);
         setAdminSecret(inputSecret);
@@ -62,7 +62,7 @@ export default function AdminPage() {
       } else {
         setError('Invalid admin secret');
       }
-    } catch (err) {
+    } catch {
       setError('Connection error');
     } finally {
       setLoading(false);
@@ -89,7 +89,7 @@ export default function AdminPage() {
     try {
       const response = await fetch(`${API_BASE}/admin/invite-codes`, {
         method: 'POST',
-        headers: { 
+        headers: {
           Authorization: `Bearer ${adminSecret}`,
           'Content-Type': 'application/json',
         },
@@ -101,7 +101,7 @@ export default function AdminPage() {
       } else {
         setError('Failed to generate code');
       }
-    } catch (err) {
+    } catch {
       setError('Connection error');
     } finally {
       setGenerating(false);
@@ -117,34 +117,62 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <main className="auth-page">
-        <div className="auth-page__content">
-          <div className="auth-page__header">
-            <h1 className="auth-page__title">Admin</h1>
-            <p className="auth-page__subtitle">Enter admin secret</p>
-          </div>
-
-          <form onSubmit={handleAuth} className="auth-page__form">
-            {error && <p className="auth-page__error">{error}</p>}
-            
-            <input
-              type="password"
-              placeholder="Admin Secret"
-              value={inputSecret}
-              onChange={(e) => setInputSecret(e.target.value)}
-              required
-              className="auth-page__input"
-              autoComplete="off"
-            />
-            
-            <button type="submit" disabled={loading} className="auth-page__submit">
-              {loading ? 'Verifying...' : 'Continue'}
-            </button>
-          </form>
-
-          <p className="auth-page__footer">
-            <Link href="/">← Back to home</Link>
+      <main className="auth">
+        <aside className="auth__panel" aria-hidden="true">
+          <p className="auth__panel-eyebrow">
+            <span className="dot" />
+            Admin · backroom
           </p>
+          <p className="auth__panel-quote">
+            For the <em>house only.</em>
+          </p>
+          <div className="auth__panel-meta">
+            <div className="auth__panel-meta-item">
+              <span className="auth__panel-meta-label">Role</span>
+              <span className="auth__panel-meta-value"><em>Admin</em></span>
+            </div>
+            <div className="auth__panel-meta-item">
+              <span className="auth__panel-meta-label">Scope</span>
+              <span className="auth__panel-meta-value"><em>Invites</em></span>
+            </div>
+          </div>
+        </aside>
+
+        <div className="auth__form-wrap">
+          <div className="auth__form-inner">
+            <Link href="/" className="auth__back">
+              <ArrowLeft size={12} />
+              Back to floor
+            </Link>
+
+            <p className="auth__eyebrow">
+              <span className="dot" />
+              Admin
+            </p>
+            <h1 className="auth__title"><em>House key.</em></h1>
+            <p className="auth__subtitle">Enter the admin secret.</p>
+
+            <form onSubmit={handleAuth} className="auth__form">
+              {error && <p className="auth__error" role="alert">{error}</p>}
+              <div className="auth__field">
+                <label className="auth__label" htmlFor="admin-secret">Secret</label>
+                <input
+                  id="admin-secret"
+                  type="password"
+                  placeholder="••••••••"
+                  value={inputSecret}
+                  onChange={(e) => setInputSecret(e.target.value)}
+                  required
+                  className="auth__input"
+                  autoComplete="off"
+                />
+              </div>
+              <button type="submit" disabled={loading} className="auth__submit">
+                {loading ? 'Verifying…' : 'Continue'}
+                {!loading && <ArrowRight className="auth__submit-arrow" size={14} />}
+              </button>
+            </form>
+          </div>
         </div>
       </main>
     );
@@ -152,94 +180,90 @@ export default function AdminPage() {
 
   return (
     <main className="page">
-      <div className="page__content">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8)' }}>
+      <div className="page__shell" style={{ maxWidth: 860 }}>
+        <header className="page__header" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
           <div>
-            <h1 className="title">Invite Codes</h1>
-            <p className="subtitle">Generate codes for DJ registration</p>
+            <p className="page__eyebrow">
+              <span className="dot" />
+              Admin · backroom
+            </p>
+            <h1 className="page__title">
+              Invite <em>codes.</em>
+            </h1>
+            <p className="page__subtitle">Generate codes for DJ registration.</p>
           </div>
           <button onClick={handleLogout} className="btn btn--ghost btn--sm">
             Log out
           </button>
-        </div>
+        </header>
 
-        {error && <p className="text-error" style={{ marginBottom: 'var(--space-4)' }}>{error}</p>}
+        {error && <p className="banner-error" role="alert">{error}</p>}
 
-        <div style={{ marginBottom: 'var(--space-8)' }}>
-          <input
-            type="text"
-            placeholder="Label (optional - e.g. 'John Smith')"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            className="input"
-            style={{ marginBottom: 'var(--space-3)' }}
-            maxLength={100}
-          />
-          <button
-            onClick={handleGenerate}
-            disabled={generating}
-            className="btn btn--primary"
-          >
-            {generating ? 'Generating...' : 'Generate New Code'}
-          </button>
-        </div>
-
-        <div className="card">
-          <h2 className="title" style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>
-            All Codes
-          </h2>
-          
-          {codes.length === 0 ? (
-            <p className="text-muted">No invite codes yet</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              {codes.map((code) => (
-                <div
-                  key={code.id}
-                  style={{
-                    padding: 'var(--space-4)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-md)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: 'var(--space-3)',
-                  }}
-                >
-                  <div>
-                    <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', fontFamily: 'monospace' }}>
-                      {code.code}
-                    </p>
-                    {code.label && (
-                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary)', marginTop: 'var(--space-1)' }}>
-                        For: {code.label}
-                      </p>
-                    )}
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-tertiary)', marginTop: 'var(--space-1)' }}>
-                      {new Date(code.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    {code.used ? (
-                      <div>
-                        <span className="badge badge--played">Used</span>
-                        {code.usedByDj && (
-                          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 'var(--space-1)' }}>
-                            by {code.usedByDj.name}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="badge badge--pending">Available</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+        <section className="section">
+          <div className="section__head">
+            <span className="section__title">
+              <span className="section__title-num">01</span>
+              Generate
+            </span>
+          </div>
+          <div className="manage__form">
+            <div className="manage__field">
+              <label className="manage__label" htmlFor="code-label">Label (optional)</label>
+              <input
+                id="code-label"
+                type="text"
+                placeholder="For — e.g. 'John Smith'"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                className="manage__input"
+                maxLength={100}
+              />
             </div>
+            <button onClick={handleGenerate} disabled={generating} className="manage__btn">
+              {generating ? 'Generating…' : (
+                <>
+                  Generate new code
+                  <ArrowRight size={14} />
+                </>
+              )}
+            </button>
+          </div>
+        </section>
+
+        <section className="section">
+          <div className="section__head">
+            <span className="section__title">
+              <span className="section__title-num">02</span>
+              All codes
+            </span>
+            <span className="section__count">{String(codes.length).padStart(2, '0')} total</span>
+          </div>
+
+          {codes.length === 0 ? (
+            <p className="text-muted" style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+              No invite codes yet
+            </p>
+          ) : (
+            codes.map((code) => (
+              <div key={code.id} className="venue-row" style={{ gridTemplateColumns: '1fr auto' }}>
+                <div className="venue-row__info">
+                  <p className="venue-row__name" style={{ fontFamily: 'var(--mono)', fontStyle: 'normal', letterSpacing: '0.18em', fontSize: '1.05rem' }}>
+                    {code.code}
+                  </p>
+                  <p className="venue-row__meta">
+                    {code.label ? `For ${code.label} · ` : ''}
+                    {new Date(code.createdAt).toLocaleDateString()}
+                    {code.used && code.usedByDj && ` · used by ${code.usedByDj.name}`}
+                  </p>
+                </div>
+                <span className={`status ${code.used ? 'status--played' : 'status--accepted'}`}>
+                  {!code.used && <span className="dot" aria-hidden="true" />}
+                  {code.used ? 'Used' : 'Open'}
+                </span>
+              </div>
+            ))
           )}
-        </div>
+        </section>
       </div>
     </main>
   );

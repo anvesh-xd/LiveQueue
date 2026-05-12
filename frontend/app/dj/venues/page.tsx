@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useDjAuth } from '@/context/DjAuthContext';
+import { VenueLogo } from '@/components/VenueLogo';
 import { apiFetch, type Venue } from '@/lib/api';
+import { ArrowLeft, ArrowRight } from '@/components/Icons';
 
 export default function DjVenuesPage() {
   const router = useRouter();
@@ -38,6 +40,7 @@ export default function DjVenuesPage() {
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load venues'))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [djUser?.id, djToken]);
 
   async function handleCreate(e: React.FormEvent) {
@@ -82,9 +85,9 @@ export default function DjVenuesPage() {
 
   if (authLoading || !djUser) {
     return (
-      <main className="manage-page">
-        <div className="manage-page__inner">
-          <p className="text-muted loading-pulse">Loading</p>
+      <main className="page">
+        <div className="page__shell">
+          <span className="loading">Loading</span>
         </div>
       </main>
     );
@@ -94,76 +97,124 @@ export default function DjVenuesPage() {
   const linkableVenues = allVenues.filter((v) => !myVenueIds.has(v.id));
 
   return (
-    <main className="manage-page">
-      <div className="manage-page__inner">
-        <header className="manage-page__header">
-          <Link href="/dj" className="manage-page__back">← Dashboard</Link>
-          <h1 className="manage-page__title">My venues</h1>
-          <p className="manage-page__subtitle">Manage where patrons can find you</p>
+    <main className="page">
+      <div className="page__shell" style={{ maxWidth: 860 }}>
+        <Link href="/dj" className="back-link">
+          <ArrowLeft size={12} />
+          Back to floor
+        </Link>
+
+        <header className="page__header">
+          <p className="page__eyebrow">
+            <span className="dot" />
+            Venue ops
+          </p>
+          <h1 className="page__title">
+            Your <em>venues.</em>
+          </h1>
+          <p className="page__subtitle">Manage the floors where patrons can find you.</p>
         </header>
 
-        {error && <p className="auth-page__error" style={{ marginBottom: 'var(--space-6)' }}>{error}</p>}
+        {error && <p className="banner-error" role="alert">{error}</p>}
 
         {loading ? (
-          <p className="text-muted loading-pulse">Loading...</p>
+          <span className="loading">Loading</span>
         ) : (
           <>
-            <section className="manage-page__section">
-              <h2 className="manage-page__section-title">Create new venue</h2>
-              <form onSubmit={handleCreate} className="manage-page__form">
-                <input
-                  type="text"
-                  placeholder="Venue name"
-                  value={createName}
-                  onChange={(e) => setCreateName(e.target.value)}
-                  className="manage-page__input"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Address (optional)"
-                  value={createAddress}
-                  onChange={(e) => setCreateAddress(e.target.value)}
-                  className="manage-page__input"
-                />
-                <button type="submit" disabled={creating} className="manage-page__btn">
-                  {creating ? 'Creating...' : 'Create venue'}
+            <section className="section">
+              <div className="section__head">
+                <span className="section__title">
+                  <span className="section__title-num">01</span>
+                  New venue
+                </span>
+              </div>
+              <form onSubmit={handleCreate} className="manage__form">
+                <div className="manage__field">
+                  <label className="manage__label" htmlFor="venue-name">Venue name</label>
+                  <input
+                    id="venue-name"
+                    type="text"
+                    placeholder="Evolve, VyNX, your floor…"
+                    value={createName}
+                    onChange={(e) => setCreateName(e.target.value)}
+                    className="manage__input"
+                    required
+                  />
+                </div>
+                <div className="manage__field">
+                  <label className="manage__label" htmlFor="venue-addr">Address (optional)</label>
+                  <input
+                    id="venue-addr"
+                    type="text"
+                    placeholder="Street, city"
+                    value={createAddress}
+                    onChange={(e) => setCreateAddress(e.target.value)}
+                    className="manage__input"
+                  />
+                </div>
+                <button type="submit" disabled={creating} className="manage__btn">
+                  {creating ? 'Creating…' : (
+                    <>
+                      Create venue
+                      <ArrowRight size={14} />
+                    </>
+                  )}
                 </button>
               </form>
             </section>
 
-            <section className="manage-page__section">
-              <h2 className="manage-page__section-title">Your venues</h2>
+            <section className="section">
+              <div className="section__head">
+                <span className="section__title">
+                  <span className="section__title-num">02</span>
+                  Your venues
+                </span>
+                <span className="section__count">{String(myVenues.length).padStart(2, '0')} linked</span>
+              </div>
               {myVenues.length === 0 ? (
-                <p className="text-muted">No venues yet. Create one above.</p>
+                <p className="text-muted" style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+                  No venues yet. Create one above.
+                </p>
               ) : (
                 myVenues.map((v) => (
-                  <div key={v.id} className="venue-item">
-                    <div className="venue-item__info">
-                      <p className="venue-item__name">{v.name}</p>
-                      <p className="venue-item__meta">{v.address || 'No address'}</p>
+                  <div key={v.id} className="venue-row">
+                    <VenueLogo name={v.name} logoUrl={v.logoUrl} variant="list" />
+                    <div className="venue-row__info">
+                      <p className="venue-row__name">{v.name}</p>
+                      <p className="venue-row__meta">{v.address || '— No address —'}</p>
                     </div>
+                    <span className="status status--accepted">
+                      <span className="dot" aria-hidden="true" />
+                      Linked
+                    </span>
                   </div>
                 ))
               )}
             </section>
 
             {linkableVenues.length > 0 && (
-              <section className="manage-page__section">
-                <h2 className="manage-page__section-title">Link to existing venue</h2>
+              <section className="section">
+                <div className="section__head">
+                  <span className="section__title">
+                    <span className="section__title-num">03</span>
+                    Link existing
+                  </span>
+                  <span className="section__count">{String(linkableVenues.length).padStart(2, '0')} available</span>
+                </div>
                 {linkableVenues.map((v) => (
-                  <div key={v.id} className="venue-item">
-                    <div className="venue-item__info">
-                      <p className="venue-item__name">{v.name}</p>
-                      <p className="venue-item__meta">{v.address || 'No address'}</p>
+                  <div key={v.id} className="venue-row">
+                    <VenueLogo name={v.name} logoUrl={v.logoUrl} variant="list" />
+                    <div className="venue-row__info">
+                      <p className="venue-row__name">{v.name}</p>
+                      <p className="venue-row__meta">{v.address || '— No address —'}</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleLink(v.id)}
                       disabled={linkingId === v.id}
-                      className="venue-item__action"
+                      className="venue-row__action"
                     >
-                      {linkingId === v.id ? 'Linking...' : 'Link'}
+                      {linkingId === v.id ? 'Linking…' : 'Link'}
                     </button>
                   </div>
                 ))}

@@ -23,7 +23,13 @@ export async function apiFetch<T>(
 }
 
 export type User = { id: string; email: string; name: string; createdAt: string };
-export type Venue = { id: string; name: string; address: string | null; djs: { id: string; name: string }[] };
+export type Venue = {
+  id: string;
+  name: string;
+  address: string | null;
+  logoUrl: string | null;
+  djs: { id: string; name: string }[];
+};
 export type RequestStatus = 'pending' | 'accepted' | 'declined' | 'played';
 export type DeezerTrack = {
   id: string;

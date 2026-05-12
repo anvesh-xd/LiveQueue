@@ -125,7 +125,25 @@ See `backend/README.md` and `frontend/README.md` for more.
 
 ## Live demo
 
-Coming soon.
+After you deploy (**Vercel** + **Render** + **Neon**), add your frontend URL to Vercel as **`NEXT_PUBLIC_SITE_URL`** (same value as your site, e.g. `https://your-app.vercel.app`) so social previews resolve correctly.
+
+**Try the product:** open your deployed site and go to **`/demo`** — it explains the two-tab patron + DJ flow and the seeded accounts from `backend/prisma/seed.ts`:
+
+| Role   | Email             | Password   |
+|--------|-------------------|------------|
+| Patron | `patron@test.com` | `patron123` |
+| DJ     | `dj@test.com`     | `dj123`     |
+
+Run **`npx prisma migrate deploy`** on production when you ship this change, then seed. The seed creates three venues — **Evolve**, **VyNX**, and **Hyze** — with club logos from `frontend/public/club-logos/`, all linked to the demo DJ.
+
+```bash
+cd backend
+# Windows PowerShell:
+$env:DATABASE_URL="<your Neon connection string>"
+npm run prisma:seed
+```
+
+Free Render tiers may **cold start** after idle time; the first request can take ~30–60 seconds.
 
 ## Documentation
 

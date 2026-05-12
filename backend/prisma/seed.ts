@@ -4,6 +4,27 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
 
+const SEED_VENUES = [
+  {
+    id: 'venue-evolve',
+    name: 'Evolve',
+    address: 'Club night · portfolio demo',
+    logoUrl: '/club-logos/evolve.png',
+  },
+  {
+    id: 'venue-vynx',
+    name: 'VyNX',
+    address: 'Club night · portfolio demo',
+    logoUrl: '/club-logos/vynx.png',
+  },
+  {
+    id: 'venue-hyze',
+    name: 'Hyze',
+    address: 'Club night · portfolio demo',
+    logoUrl: '/club-logos/hyze.png',
+  },
+] as const;
+
 async function main() {
   console.log('🌱 Starting seed...');
 
@@ -32,23 +53,33 @@ async function main() {
   });
   console.log('✅ DJ:', dj.email);
 
-  const venue = await prisma.venue.upsert({
-    where: { id: 'seed-venue-1' },
-    update: {},
-    create: {
-      id: 'seed-venue-1',
-      name: 'The Demo Venue',
-      address: '123 Demo St',
-    },
-  });
-  console.log('✅ Venue:', venue.name);
+  await prisma.venueDJ.deleteMany({ where: { venueId: 'seed-venue-1' } });
+  await prisma.venue.deleteMany({ where: { id: 'seed-venue-1' } });
 
-  await prisma.venueDJ.upsert({
-    where: { venueId_djId: { venueId: venue.id, djId: dj.id } },
-    update: {},
-    create: { venueId: venue.id, djId: dj.id },
-  });
-  console.log('✅ VenueDJ link created');
+  for (const v of SEED_VENUES) {
+    const venue = await prisma.venue.upsert({
+      where: { id: v.id },
+      update: {
+        name: v.name,
+        address: v.address,
+        logoUrl: v.logoUrl,
+      },
+      create: {
+        id: v.id,
+        name: v.name,
+        address: v.address,
+        logoUrl: v.logoUrl,
+      },
+    });
+    console.log('✅ Venue:', venue.name);
+
+    await prisma.venueDJ.upsert({
+      where: { venueId_djId: { venueId: venue.id, djId: dj.id } },
+      update: {},
+      create: { venueId: venue.id, djId: dj.id },
+    });
+  }
+  console.log('✅ VenueDJ links for demo DJ');
 
   console.log('✨ Seed completed!');
   console.log('  Patron: patron@test.com / patron123');

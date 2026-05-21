@@ -102,18 +102,11 @@ Patron Web App  ── REST API ──►  Backend (Express)  ──►  Postgre
 Backend: `prisma:migrate`, `prisma:studio`, `prisma:seed`.  
 See `backend/README.md` and `frontend/README.md` for more.
 
-## Live demo
+## Deployment
 
 After you deploy (**Vercel** + **Render** + **Neon**), add your frontend URL to Vercel as **`NEXT_PUBLIC_SITE_URL`** (same value as your site, e.g. `https://your-app.vercel.app`) so social previews resolve correctly.
 
-**Try the product:** open your deployed site and go to **`/demo`** — it explains the two-tab patron + DJ flow and the seeded accounts from `backend/prisma/seed.ts`:
-
-| Role   | Email             | Password   |
-|--------|-------------------|------------|
-| Patron | `patron@test.com` | `patron123` |
-| DJ     | `dj@test.com`     | `dj123`     |
-
-Run **`npx prisma migrate deploy`** on production when you ship this change, then seed. The seed creates three venues — **Evolve**, **VyNX**, and **Hyze** — with club logos from `frontend/public/club-logos/`, all linked to the demo DJ.
+Run **`npx prisma migrate deploy`** on production when you ship schema changes, then optionally seed initial venues and accounts:
 
 ```bash
 cd backend
@@ -121,6 +114,8 @@ cd backend
 $env:DATABASE_URL="<your Neon connection string>"
 npm run prisma:seed
 ```
+
+The seed creates three sample venues — **Evolve**, **VyNX**, and **Hyze** — plus a patron (`patron@test.com` / `patron123`) and a DJ (`dj@test.com` / `dj123`). Rotate or remove these credentials before any real launch.
 
 Free Render tiers may **cold start** after idle time; the first request can take ~30–60 seconds.
 

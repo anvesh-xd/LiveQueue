@@ -45,7 +45,6 @@ export function Header() {
                   </>
                 ) : (
                   <>
-                    <Link href="/demo" className="header__link">Demo</Link>
                     <Link href="/login" className="header__link">Sign in</Link>
                     <Link href="/register" className="header__link header__link--primary">Get in</Link>
                   </>

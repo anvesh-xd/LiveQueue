@@ -12,6 +12,7 @@ const REFRESH_TOKEN_KEY = 'livequeue_refresh_token';
 const USER_KEY = 'livequeue_user';
 const CLEAR_DJ_EVENT = 'livequeue:clear-dj';
 const CLEAR_PATRON_EVENT = 'livequeue:clear-patron';
+const TOKEN_REFRESHED_EVENT = 'livequeue:token-refreshed';
 
 type DjAuthContextType = {
   djUser: User | null;
@@ -58,9 +59,21 @@ export function DjAuthProvider({ children }: { children: React.ReactNode }) {
       setDjToken(null);
       setDjUser(null);
     };
-    if (typeof window !== 'undefined') window.addEventListener(CLEAR_DJ_EVENT, onClearDj);
+    const onTokenRefreshed = (e: Event) => {
+      const detail = (e as CustomEvent<{ kind: 'patron' | 'dj'; token: string }>).detail;
+      if (detail?.kind === 'dj') {
+        setDjToken(detail.token);
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener(CLEAR_DJ_EVENT, onClearDj);
+      window.addEventListener(TOKEN_REFRESHED_EVENT, onTokenRefreshed);
+    }
     return () => {
-      if (typeof window !== 'undefined') window.removeEventListener(CLEAR_DJ_EVENT, onClearDj);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener(CLEAR_DJ_EVENT, onClearDj);
+        window.removeEventListener(TOKEN_REFRESHED_EVENT, onTokenRefreshed);
+      }
     };
   }, []);
 

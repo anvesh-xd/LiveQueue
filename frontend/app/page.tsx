@@ -125,9 +125,6 @@ export default function Home() {
               Get in
               <ArrowRight className="btn__arrow" size={14} />
             </Link>
-            <Link href="/demo" className="btn btn--ghost btn--lg">
-              Try the demo
-            </Link>
             <Link href="/dj/login" className="btn btn--outline btn--lg">
               DJs — enter here
             </Link>
@@ -273,8 +270,8 @@ export default function Home() {
             Get in
             <ArrowRight className="btn__arrow" size={14} />
           </Link>
-          <Link href="/demo" className="btn btn--ghost btn--lg">
-            Take the tour
+          <Link href="/dj/login" className="btn btn--outline btn--lg">
+            DJs — enter here
           </Link>
         </div>
       </section>
@@ -311,7 +308,6 @@ export default function Home() {
             <div>
               <p className="footer__col-title">Project</p>
               <nav className="footer__nav">
-                <Link href="/demo">Demo</Link>
                 <a href="https://github.com/anvesh-xd/LiveQueue" target="_blank" rel="noopener noreferrer">GitHub</a>
               </nav>
             </div>

@@ -56,14 +56,28 @@ Build in this order. Each step is testable before moving on.
 
 ---
 
+## Step 6: Hardening + queue ops ✅
+- [x] 30-min per-(patron, venue, DJ) cooldown on `POST /requests` (returns 429 with retry-after)
+- [x] Frontend `apiFetch` auto-refreshes the access token on 401 and retries (patron + DJ)
+- [x] `Request.position` field with auto-assigned queue order on accept and `POST /requests/reorder`
+- [x] DJ dashboard: move-up / move-down buttons on the accepted queue (`queue:reordered` socket event)
+- [x] `VenueDJ.isActive`; DJ can go live/offline per venue, edit name/address, and unlink
+- [x] Patron `GET /venues` filters to venues with at least one active DJ
+- [x] Removed standalone `/demo` page; product surface is now the real flow
+
+**Check:** A patron blocked by cooldown gets a clear 429 message. A DJ can reorder the queue and toggle "Go offline" — patrons stop seeing the venue when no DJ is active.
+
+---
+
 ## Optional later
 - Spotify search proxy: `GET /spotify/search?q=...` (backend calls Spotify API)
-- Seed data: venues, sample DJ, sample requests
+- Drag-and-drop reorder on the DJ queue (current UI uses up/down buttons)
+- Backend tests (auth, request creation + cooldown, reorder ownership checks)
 - Deploy (e.g. Vercel + Railway/Render)
 
 ---
 
-**Current step:** MVP complete. Optional: Spotify search, deploy.
+**Current step:** MVP + hardening complete.
 
 ---
 

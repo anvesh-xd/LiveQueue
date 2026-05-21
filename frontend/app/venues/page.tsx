@@ -76,10 +76,7 @@ export default function VenuesPage() {
             </p>
             <h2 className="empty__title"><em>No venues yet.</em></h2>
             <p className="empty__desc">
-              On a fresh deploy the database is empty until you run the seed (creates{' '}
-              <strong>Evolve, VyNX, and Hyze</strong> and demo accounts). See{' '}
-              <Link href="/demo" className="link link--strobe">Try the demo</Link> for the one-line setup,
-              or ask a DJ to add venues from their dashboard.
+              No DJs have set up a venue yet. Check back soon, or ask a DJ to add their floor.
             </p>
           </div>
         ) : (

@@ -8,19 +8,19 @@ const SEED_VENUES = [
   {
     id: 'venue-evolve',
     name: 'Evolve',
-    address: 'Club night · portfolio demo',
+    address: 'Club night',
     logoUrl: '/club-logos/evolve.png',
   },
   {
     id: 'venue-vynx',
     name: 'VyNX',
-    address: 'Club night · portfolio demo',
+    address: 'Club night',
     logoUrl: '/club-logos/vynx.png',
   },
   {
     id: 'venue-hyze',
     name: 'Hyze',
-    address: 'Club night · portfolio demo',
+    address: 'Club night',
     logoUrl: '/club-logos/hyze.png',
   },
 ] as const;
@@ -79,7 +79,7 @@ async function main() {
       create: { venueId: venue.id, djId: dj.id },
     });
   }
-  console.log('✅ VenueDJ links for demo DJ');
+  console.log('✅ VenueDJ links for seed DJ');
 
   console.log('✨ Seed completed!');
   console.log('  Patron: patron@test.com / patron123');

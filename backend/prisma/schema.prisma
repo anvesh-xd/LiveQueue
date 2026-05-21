@@ -54,14 +54,16 @@ model Venue {
 }
 
 model VenueDJ {
-  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  venueId String
-  dj      DJ     @relation(fields: [djId], references: [id], onDelete: Cascade)
-  djId    String
+  venue    Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId  String
+  dj       DJ      @relation(fields: [djId], references: [id], onDelete: Cascade)
+  djId     String
+  isActive Boolean @default(true)
 
   @@id([venueId, djId])
   @@index([djId])
   @@index([venueId])
+  @@index([isActive])
 }
 
 model Request {
@@ -76,6 +78,7 @@ model Request {
   albumArtUrl    String?
 
   status         RequestStatus @default(pending)
+  position       Int?
 
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -90,6 +93,7 @@ model Request {
   @@index([venueId])
   @@index([status])
   @@index([createdAt])
+  @@index([position])
 }
 
 model RefreshToken {

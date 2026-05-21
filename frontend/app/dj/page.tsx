@@ -64,6 +64,7 @@ export default function DjDashboardPage() {
     });
     socket.on('request:new', () => fetchRequests());
     socket.on('request:updated', () => fetchRequests());
+    socket.on('queue:reordered', () => fetchRequests());
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -88,6 +89,45 @@ export default function DjDashboardPage() {
     }
   }
 
+  async function move(id: string, direction: 'up' | 'down') {
+    if (!djToken) return;
+    const ordered = requests
+      .filter((r) => r.status === 'accepted')
+      .slice()
+      .sort((a, b) => {
+        const pa = a.position ?? Number.MAX_SAFE_INTEGER;
+        const pb = b.position ?? Number.MAX_SAFE_INTEGER;
+        if (pa !== pb) return pa - pb;
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
+    const idx = ordered.findIndex((r) => r.id === id);
+    if (idx === -1) return;
+    const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapWith < 0 || swapWith >= ordered.length) return;
+
+    const next = ordered.slice();
+    [next[idx], next[swapWith]] = [next[swapWith], next[idx]];
+    const optimistic = next.map((r, i) => ({ ...r, position: i + 1 }));
+    setRequests((prev) => {
+      const otherStatuses = prev.filter((r) => r.status !== 'accepted');
+      return [...optimistic, ...otherStatuses];
+    });
+    setUpdating(id);
+    try {
+      await apiFetch('/requests/reorder', {
+        method: 'POST',
+        token: djToken,
+        body: JSON.stringify({ orderedIds: next.map((r) => r.id) }),
+      });
+      fetchRequests();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Reorder failed');
+      fetchRequests();
+    } finally {
+      setUpdating(null);
+    }
+  }
+
   if (authLoading || !djUser) {
     return (
       <main className="page">
@@ -99,7 +139,15 @@ export default function DjDashboardPage() {
   }
 
   const pending = requests.filter((r) => r.status === 'pending');
-  const accepted = requests.filter((r) => r.status === 'accepted');
+  const accepted = requests
+    .filter((r) => r.status === 'accepted')
+    .slice()
+    .sort((a, b) => {
+      const pa = a.position ?? Number.MAX_SAFE_INTEGER;
+      const pb = b.position ?? Number.MAX_SAFE_INTEGER;
+      if (pa !== pb) return pa - pb;
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
   const others = requests.filter((r) => r.status !== 'pending' && r.status !== 'accepted');
 
   return (
@@ -191,8 +239,9 @@ export default function DjDashboardPage() {
                   </span>
                   <span className="section__count">{String(accepted.length).padStart(2, '0')} on deck</span>
                 </div>
-                {accepted.map((req) => (
+                {accepted.map((req, i) => (
                   <article key={req.id} className="req-card">
+                    <span className="req-card__pos">{String(i + 1).padStart(2, '0')}</span>
                     <div
                       className="req-card__art"
                       style={req.albumArtUrl ? { backgroundImage: `url(${req.albumArtUrl})` } : {}}
@@ -204,6 +253,28 @@ export default function DjDashboardPage() {
                       </p>
                     </div>
                     <div className="req-card__actions">
+                      <div className="req-card__move">
+                        <button
+                          type="button"
+                          onClick={() => move(req.id, 'up')}
+                          disabled={updating === req.id || i === 0}
+                          className="action-btn action-btn--ghost"
+                          aria-label="Move up"
+                          title="Move up"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => move(req.id, 'down')}
+                          disabled={updating === req.id || i === accepted.length - 1}
+                          className="action-btn action-btn--ghost"
+                          aria-label="Move down"
+                          title="Move down"
+                        >
+                          ↓
+                        </button>
+                      </div>
                       <button
                         type="button"
                         onClick={() => updateStatus(req.id, 'played')}

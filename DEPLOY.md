@@ -139,4 +139,4 @@ Optional: seed data:
 |---------------------|----------------------------|
 | `NEXT_PUBLIC_API_URL` | Your backend URL (Railway/Render) |
 
-After deployment, add **Live demo: https://your-vercel-url.vercel.app** to your README.
+After deployment, add **Live: https://your-vercel-url.vercel.app** to your README.

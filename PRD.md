@@ -20,7 +20,7 @@ LiveQueue is a real-time web application for live events where patrons submit so
 - Patrons can request songs without interrupting the DJ.
 - DJs maintain full control over what gets played.
 - Real-time sync between patron and DJ views.
-- Deployable demo suitable for portfolio and interviews.
+- Deployable to a public URL for live use.
 
 ---
 
